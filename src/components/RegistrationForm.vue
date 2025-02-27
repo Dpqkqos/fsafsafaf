@@ -148,16 +148,17 @@ body {
   height: 100vh;
   line-height: 1.6;
   background: #fff;
-  /* Уберите overflow: hidden */
+  overflow: hidden;
 }
 .app-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  /* Уберите overflow: hidden */
+  overflow: hidden;
   position: relative;
 }
+
 .registration-text,
 .registration-container {
   position: absolute;
@@ -167,22 +168,18 @@ body {
   text-align: center;
   color: #fff;
 }
-
-/* Стили формы регистрации */
-.registration-container {
-  width: 400px;
-  max-width: 90%; /* Добавьте адаптивность */
-  padding: 20px;
-  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff);
-  background-size: 400% 400%;
-  animation: gradient 4s ease infinite;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+.greeting-message h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  background: linear-gradient(45deg, #f700ff, #e100ff, #6708ff);
+  color: transparent;
+  -webkit-background-clip: text;
 }
-@media (max-width: 600px) {
-  .registration-container {
-    width: 90%; /* Уменьшаем ширину для мобильных устройств */
-  }
+.registration-text h3 {
+  font-size: 1.5rem;
+  background: linear-gradient(45deg, #f700ff, #e100ff, #6708ff);
+  color: transparent;
+  -webkit-background-clip: text;
 }
 
 /* Анимации */
@@ -212,7 +209,21 @@ body {
   opacity: 1;
 }
 
-/* Стили формы */
+
+/* Стили формы регистрации */
+.registration-container {
+  width: 400px;
+  padding: 20px;
+  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff);
+  background-size: 400% 400%;
+  animation: gradient 4s ease infinite;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+.registration-container h2 {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
 .form-group {
   margin-bottom: 15px;
 }
@@ -229,6 +240,9 @@ body {
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
+}
+.form-group input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
 }
 .submit-button {
   width: 100%;
