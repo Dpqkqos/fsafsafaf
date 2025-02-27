@@ -1,14 +1,14 @@
 <template>
   <div class="app-container">
     <!-- Приветственное сообщение -->
-    <transition name="fade" @after-leave="showRegistrationText = true">
+    <transition name="fade" @after-leave="setShowRegistrationText">
       <div v-if="showGreeting" class="greeting-message">
         <h2>Привет!</h2>
       </div>
     </transition>
 
     <!-- Сообщение о регистрации -->
-    <transition name="fade" @after-leave="showRegistrationForm = true">
+    <transition name="fade" @after-leave="setShowRegistrationForm">
       <div v-if="showRegistrationText" class="registration-text">
         <h3>Чтобы продолжить, пройди регистрацию.</h3>
       </div>
@@ -29,7 +29,7 @@
           </div>
           <div class="form-group">
             <label for="middleName">Отчество:</label>
-            <input type="text" id="middleName" v-model="middleName" />
+            <input type="text" id="middleName" />
           </div>
           <div class="form-group">
             <label for="birthDate">Дата рождения:</label>
@@ -71,7 +71,6 @@ export default {
       birthTime: "",
       forecast: "",
       startTime: null,
-      currentTime: null,
       timerInterval: null,
     };
   },
@@ -85,16 +84,17 @@ export default {
       return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
     },
   },
-  watch: {
-    showGreeting(newVal) {
-      if (!newVal) {
-        setTimeout(() => {
-          this.showRegistrationText = true;
-        }, 1000);
-      }
-    },
-  },
   methods: {
+    setShowRegistrationText() {
+      setTimeout(() => {
+        this.showRegistrationText = true;
+      }, 3000);
+    },
+    setShowRegistrationForm() {
+      setTimeout(() => {
+        this.showRegistrationForm = true;
+      }, 1000);
+    },
     async submitRegistration() {
       const userData = {
         lastName: this.lastName,
@@ -105,7 +105,7 @@ export default {
       };
 
       try {
-        const response = await fetch("https://your-api.com/register", {
+        const response = await fetch("https://uniback-production.up.railway.app/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(userData),
@@ -151,7 +151,7 @@ export default {
 html, body {
   height: 100vh;
   background: #fff;
-  overflow: hidden;
+  overflow: hidden; /* Убираем скроллбар */
 }
 .app-container {
   display: flex;
