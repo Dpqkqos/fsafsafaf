@@ -48,6 +48,10 @@
         <div class="timer">
           <p>Время с момента регистрации: {{ formattedTime }}</p>
         </div>
+        <!-- Сообщение об ошибке -->
+        <div v-if="errorMessage" class="error-message">
+          <p>{{ errorMessage }}</p>
+        </div>
       </div>
     </transition>
   </div>
@@ -70,6 +74,8 @@ export default {
       currentTime: null,
       timerInterval: null,
       telegramId: "", // Добавляем telegram_id
+      errorMessage: "", // Для вывода сообщений об ошибках
+      isLoading: false, // Для индикатора загрузки
     };
   },
   computed: {
@@ -93,6 +99,9 @@ export default {
   },
   methods: {
     async submitRegistration() {
+      this.errorMessage = ""; // Очищаем сообщение об ошибке
+      this.isLoading = true; // Начинаем загрузку
+
       const userData = {
         telegram_id: this.telegramId, // Добавляем telegram_id
         lastName: this.lastName,
@@ -105,23 +114,26 @@ export default {
       try {
         const response = await fetch("https://uniback-vwmy.onrender.com/register", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json", // Добавляем заголовок Accept
+          },
           body: JSON.stringify(userData),
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error("Ошибка регистрации:", errorData);
-          alert(`Ошибка: ${errorData.detail || "Неизвестная ошибка"}`);
-          return;
+          throw new Error(errorData.detail || "Неизвестная ошибка");
         }
 
         const data = await response.json();
         this.forecast = data.forecast;
         this.startTimer();
       } catch (error) {
-        console.error("Ошибка при регистрации:", error);
-        alert("Не удалось зарегистрироваться. Попробуйте снова.");
+        console.error("Ошибка при регистрации:", error.message);
+        this.errorMessage = `Ошибка: ${error.message}`; // Показываем сообщение об ошибке
+      } finally {
+        this.isLoading = false; // Завершаем загрузку
       }
     },
     startTimer() {
@@ -282,6 +294,16 @@ body {
   margin-top: 20px;
   font-size: 0.9rem;
   color: #fff;
+}
+
+/* Сообщение об ошибке */
+.error-message {
+  margin-top: 20px;
+  padding: 10px;
+  background: rgba(255, 0, 0, 0.1);
+  color: #ff0000;
+  border-radius: 4px;
+  text-align: center;
 }
 
 /* Медиа-запросы для мобильных устройств */
