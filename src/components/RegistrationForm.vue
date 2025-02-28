@@ -116,7 +116,7 @@ export default {
     },
     async checkUserRegistration() {
       try {
-        const response = await axios.get(`uniback-production.up.railway.app/user/${this.telegramId}`);
+        const response = await axios.get(`uniback-vwmy.onrender.com/user/${this.telegramId}`);
         if (response.data) {
           localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
           this.$router.push({ name: 'MainInterface' }); // Переход на главный интерфейс
@@ -141,7 +141,7 @@ export default {
       };
 
       try {
-        await axios.post("uniback-production.up.railway.app/register", userData);
+        await axios.post("uniback-vwmy.onrender.com/register", userData);
         localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
         this.$router.push({ name: 'MainInterface' }); // Переход на главный интерфейс
       } catch (error) {
