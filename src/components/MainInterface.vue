@@ -210,13 +210,13 @@ export default {
     async loadUserData() {
       try {
         // Загрузка данных пользователя
-        const userResponse = await fetch(`uniback-production.up.railway.app/user/${this.user.id}`);
+        const userResponse = await fetch(`https://uniback-vwmy.onrender.com/user/${this.user.id}`);
         if (!userResponse.ok) throw new Error("Ошибка загрузки пользователя");
         const userData = await userResponse.json();
         this.user = { ...this.user, ...userData };
 
         // Загрузка эмоций пользователя
-        const emotionsResponse = await fetch(`uniback-production.up.railway.app/emotions/${this.user.id}`);
+        const emotionsResponse = await fetch(`https://uniback-vwmy.onrender.com/emotions/${this.user.id}`);
         if (!emotionsResponse.ok) throw new Error("Ошибка загрузки эмоций");
         const emotionsData = await emotionsResponse.json();
         this.user.emotions = emotionsData;
@@ -232,7 +232,7 @@ export default {
       }
 
       try {
-        const response = await fetch("uniback-production.up.railway.app/emotion/", {
+        const response = await fetch("https://uniback-vwmy.onrender.com/emotion/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -255,7 +255,7 @@ export default {
 
     async deleteEmotion(emotionId) {
       try {
-        const response = await fetch(`uniback-production.up.railway.app/emotion/${emotionId}`, {
+        const response = await fetch(`https://uniback-vwmy.onrender.com/emotion/${emotionId}`, {
           method: "DELETE"
         });
 
@@ -270,7 +270,7 @@ export default {
 
     async generateForecast() {
       try {
-        const response = await fetch(`uniback-production.up.railway.app/generate-forecast/${this.user.id}`);
+        const response = await fetch(`https://uniback-vwmy.onrender.com/generate-forecast/${this.user.id}`);
         if (!response.ok) throw new Error("Ошибка генерации прогноза");
 
         const data = await response.json();
