@@ -48,10 +48,6 @@
         <div class="timer">
           <p>Время с момента регистрации: {{ formattedTime }}</p>
         </div>
-        <!-- Сообщение об ошибке -->
-        <div v-if="errorMessage" class="error-message">
-          <p>{{ errorMessage }}</p>
-        </div>
       </div>
     </transition>
   </div>
@@ -73,9 +69,7 @@ export default {
       startTime: null,
       currentTime: null,
       timerInterval: null,
-      telegramId: "", // Добавляем telegram_id
-      errorMessage: "", // Для вывода сообщений об ошибках
-      isLoading: false, // Для индикатора загрузки
+      telegramId: null, // Добавляем telegram_id как число
     };
   },
   computed: {
@@ -88,20 +82,8 @@ export default {
       return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
     },
   },
-  watch: {
-    showRegistrationText(newVal) {
-      if (newVal) {
-        setTimeout(() => {
-          this.showRegistrationText = false; // Скрыть текст через 3 секунды
-        }, 3000);
-      }
-    },
-  },
   methods: {
     async submitRegistration() {
-      this.errorMessage = ""; // Очищаем сообщение об ошибке
-      this.isLoading = true; // Начинаем загрузку
-
       const userData = {
         telegram_id: this.telegramId, // Добавляем telegram_id
         lastName: this.lastName,
@@ -114,26 +96,23 @@ export default {
       try {
         const response = await fetch("https://uniback-vwmy.onrender.com/register", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json", // Добавляем заголовок Accept
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(userData),
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.detail || "Неизвестная ошибка");
+          console.error("Ошибка регистрации:", errorData);
+          alert(`Ошибка: ${errorData.detail || "Неизвестная ошибка"}`);
+          return;
         }
 
         const data = await response.json();
         this.forecast = data.forecast;
         this.startTimer();
       } catch (error) {
-        console.error("Ошибка при регистрации:", error.message);
-        this.errorMessage = `Ошибка: ${error.message}`; // Показываем сообщение об ошибке
-      } finally {
-        this.isLoading = false; // Завершаем загрузку
+        console.error("Ошибка при регистрации:", error);
+        alert("Не удалось зарегистрироваться. Попробуйте снова.");
       }
     },
     startTimer() {
@@ -151,7 +130,7 @@ export default {
   },
   mounted() {
     if (Telegram.WebApp) {
-      this.telegramId = Telegram.WebApp.initDataUnsafe.user.id.toString(); // Получаем ID пользователя
+      this.telegramId = BigInt(Telegram.WebApp.initDataUnsafe.user.id); // Получаем ID пользователя как BigInt
     }
     setTimeout(() => {
       this.showGreeting = false; // Скрыть приветствие через 3 секунды
@@ -294,16 +273,6 @@ body {
   margin-top: 20px;
   font-size: 0.9rem;
   color: #fff;
-}
-
-/* Сообщение об ошибке */
-.error-message {
-  margin-top: 20px;
-  padding: 10px;
-  background: rgba(255, 0, 0, 0.1);
-  color: #ff0000;
-  border-radius: 4px;
-  text-align: center;
 }
 
 /* Медиа-запросы для мобильных устройств */
