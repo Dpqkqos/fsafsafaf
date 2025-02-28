@@ -58,24 +58,23 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
       showGreeting: true,
       showRegistrationText: false,
       showRegistrationForm: false,
+      telegramId: null,
       lastName: "",
       firstName: "",
       middleName: "",
       birthDate: "",
       birthTime: "",
-      forecast: "",
       startTime: null,
       currentTime: null,
       timerInterval: null,
-      telegramId: "", // Добавляем telegram_id
-      errorMessage: "", // Для вывода сообщений об ошибках
-      isLoading: false, // Для индикатора загрузки
     };
   },
   computed: {
@@ -98,12 +97,39 @@ export default {
     },
   },
   methods: {
-    async submitRegistration() {
-      this.errorMessage = ""; // Очищаем сообщение об ошибке
-      this.isLoading = true; // Начинаем загрузку
+    async initializeTelegramUser() {
+      if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        const initData = JSON.parse(tg.initDataUnsafe);
+        this.telegramId = initData.user.id;
 
+        // Заполнение данных пользователя из Telegram
+        this.firstName = initData.user.first_name || "";
+        this.lastName = initData.user.last_name || "";
+        this.middleName = initData.user.username || "";
+
+        // Развернуть приложение на весь экран
+        tg.expand();
+      } else {
+        alert("Telegram Web App не поддерживается.");
+      }
+    },
+    async checkUserRegistration() {
+      try {
+        const response = await axios.get(`uniback-production.up.railway.app/user/${this.telegramId}`);
+        if (response.data) {
+          this.$router.push({ name: 'MainInterface' }); // Переход на главный интерфейс, если пользователь зарегистрирован
+        } else {
+          this.showRegistrationForm = true; // Показать форму регистрации, если пользователь не зарегистрирован
+        }
+      } catch (error) {
+        console.error("Ошибка при проверке регистрации:", error);
+        this.showRegistrationForm = true; // Показать форму регистрации в случае ошибки
+      }
+    },
+    async submitRegistration() {
       const userData = {
-        telegram_id: this.telegramId, // Добавляем telegram_id
+        telegram_id: this.telegramId,
         lastName: this.lastName,
         firstName: this.firstName,
         middleName: this.middleName,
@@ -112,28 +138,11 @@ export default {
       };
 
       try {
-        const response = await fetch("https://uniback-vwmy.onrender.com/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json", // Добавляем заголовок Accept
-          },
-          body: JSON.stringify(userData),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || "Неизвестная ошибка");
-        }
-
-        const data = await response.json();
-        this.forecast = data.forecast;
-        this.startTimer();
+        await axios.post("uniback-production.up.railway.app/register", userData);
+        this.$router.push({ name: 'MainInterface' }); // Переход на главный интерфейс после успешной регистрации
       } catch (error) {
-        console.error("Ошибка при регистрации:", error.message);
-        this.errorMessage = `Ошибка: ${error.message}`; // Показываем сообщение об ошибке
-      } finally {
-        this.isLoading = false; // Завершаем загрузку
+        console.error("Ошибка при регистрации:", error);
+        alert("Не удалось зарегистрироваться. Попробуйте снова.");
       }
     },
     startTimer() {
@@ -150,14 +159,16 @@ export default {
     }
   },
   mounted() {
-    if (Telegram.WebApp) {
-      this.telegramId = Telegram.WebApp.initDataUnsafe.user.id.toString(); // Получаем ID пользователя
-    }
     setTimeout(() => {
       this.showGreeting = false; // Скрыть приветствие через 3 секунды
     }, 3000);
+
+    this.initializeTelegramUser().then(() => {
+      this.checkUserRegistration(); // Проверка регистрации пользователя
+    });
   },
 };
+
 </script>
 
 <style scoped>
