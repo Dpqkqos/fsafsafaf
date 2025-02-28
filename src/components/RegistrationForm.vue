@@ -69,6 +69,7 @@ export default {
       startTime: null,
       currentTime: null,
       timerInterval: null,
+      telegramId: "", // Добавляем telegram_id
     };
   },
   computed: {
@@ -93,19 +94,28 @@ export default {
   methods: {
     async submitRegistration() {
       const userData = {
+        telegram_id: this.telegramId, // Добавляем telegram_id
         lastName: this.lastName,
         firstName: this.firstName,
         middleName: this.middleName,
         birthDate: this.birthDate,
         birthTime: this.birthTime,
       };
+
       try {
-        const response = await fetch("https://uniback-vwmy.onrender.com/register", { // Изменено API
+        const response = await fetch("https://uniback-vwmy.onrender.com/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(userData),
         });
-        if (!response.ok) throw new Error("Ошибка регистрации");
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Ошибка регистрации:", errorData);
+          alert(`Ошибка: ${errorData.detail || "Неизвестная ошибка"}`);
+          return;
+        }
+
         const data = await response.json();
         this.forecast = data.forecast;
         this.startTimer();
@@ -128,6 +138,9 @@ export default {
     }
   },
   mounted() {
+    if (Telegram.WebApp) {
+      this.telegramId = Telegram.WebApp.initDataUnsafe.user.id.toString(); // Получаем ID пользователя
+    }
     setTimeout(() => {
       this.showGreeting = false; // Скрыть приветствие через 3 секунды
     }, 3000);
@@ -162,8 +175,8 @@ body {
 /* Градиентный текст */
 .greeting-message h2,
 .registration-text h3 {
-  font-size: 1.5rem; /* Уменьшенный шрифт */
-  background: linear-gradient(45deg, #ff7b00, #ff00d4, #8e00ff); /* Градиент */
+  font-size: 1.5rem;
+  background: linear-gradient(45deg, #f70eff, #7700ff, #750cff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -182,22 +195,22 @@ body {
   transition: transform 0.5s ease, opacity 0.5s ease;
 }
 .slide-up-enter-from {
-  transform: translate(-50%, 100%);
+  transform: translateY(100%);
   opacity: 0;
 }
 .slide-up-leave-to {
-  transform: translate(-50%, -100%);
+  transform: translateY(-100%);
   opacity: 0;
 }
 .slide-up-enter-to,
 .slide-up-leave-from {
-  transform: translate(-50%, -50%);
+  transform: translateY(0);
   opacity: 1;
 }
 
 /* Стили формы регистрации */
 .registration-container {
-  width: 90%; /* Адаптивная ширина */
+  width: 90%;
   max-width: 400px;
   padding: 20px;
   background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff);
@@ -205,10 +218,16 @@ body {
   animation: gradient 4s ease infinite;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  top: 0;
+  left: 0;
+  margin: auto;
 }
 .registration-container h2 {
+  color: #fff;
+  text-align: center;
   margin-bottom: 20px;
-  font-size: 1.2rem; /* Уменьшенный шрифт */
+  font-size: 1.2rem;
 }
 .form-group {
   margin-bottom: 15px;
@@ -218,7 +237,7 @@ body {
   margin-bottom: 5px;
   font-weight: bold;
   color: #fff;
-  font-size: 0.9rem; /* Уменьшенный шрифт */
+  font-size: 0.9rem;
 }
 .form-group input {
   width: 100%;
@@ -227,7 +246,7 @@ body {
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
-  font-size: 0.9rem; /* Уменьшенный шрифт */
+  font-size: 0.9rem;
 }
 .form-group input::placeholder {
   color: rgba(255, 255, 255, 0.7);
@@ -241,7 +260,7 @@ body {
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.3s ease;
-  font-size: 0.9rem; /* Уменьшенный шрифт */
+  font-size: 0.9rem;
 }
 .submit-button:hover {
   background: #e62ee6;
@@ -255,14 +274,29 @@ body {
   border-radius: 4px;
 }
 .forecast-section h3 {
-  font-size: 1rem; /* Уменьшенный шрифт */
+  font-size: 1rem;
 }
 
 /* Таймер */
 .timer {
   margin-top: 20px;
-  font-size: 0.9rem; /* Уменьшенный шрифт */
+  font-size: 0.9rem;
   color: #fff;
+}
+
+/* Медиа-запросы для мобильных устройств */
+@media (max-width: 768px) {
+  .registration-container {
+    width: 100%;
+    padding: 15px;
+  }
+  .form-group input {
+    font-size: 0.8rem;
+  }
+  .submit-button {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
 }
 
 @keyframes gradient {
