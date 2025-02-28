@@ -100,7 +100,7 @@ export default {
     async initializeTelegramUser() {
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
-        const initData = JSON.parse(tg.initDataUnsafe);
+        const initData = tg.initDataUnsafe; // Убираем JSON.parse, так как это уже объект
         this.telegramId = initData.user.id;
 
         // Заполнение данных пользователя из Telegram
@@ -116,7 +116,7 @@ export default {
     },
     async checkUserRegistration() {
       try {
-        const response = await axios.get(`uniback-vwmy.onrender.com/user/${this.telegramId}`);
+        const response = await axios.get(`https://uniback-vwmy.onrender.com/user/${this.telegramId}`);
         if (response.data) {
           localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
           this.$router.push({ name: 'MainInterface' }); // Переход на главный интерфейс
@@ -141,7 +141,7 @@ export default {
       };
 
       try {
-        await axios.post("uniback-vwmy.onrender.com/register", userData);
+        const response = await axios.post("https://uniback-vwmy.onrender.com/register", userData);
         localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
         this.$router.push({ name: 'MainInterface' }); // Переход на главный интерфейс
       } catch (error) {
