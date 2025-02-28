@@ -100,7 +100,7 @@ export default {
         birthTime: this.birthTime,
       };
       try {
-        const response = await fetch("https://uniback-production.up.railway.app/register", { // Изменено API
+        const response = await fetch("https://uniback-vwmy.onrender.com/register", { // Изменено API
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(userData),
