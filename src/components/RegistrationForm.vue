@@ -6,12 +6,14 @@
         <h2>Привет!</h2>
       </div>
     </transition>
+
     <!-- Сообщение о регистрации -->
     <transition name="fade" @after-leave="showRegistrationForm = true">
       <div v-if="showRegistrationText" class="registration-text">
         <h3>Чтобы продолжить, пройди регистрацию.</h3>
       </div>
     </transition>
+
     <!-- Форма регистрации -->
     <transition name="slide-up">
       <div v-if="showRegistrationForm" class="registration-container">
@@ -39,18 +41,10 @@
           </div>
           <button type="submit" class="submit-button">Зарегистрироваться</button>
         </form>
-        <!-- Прогноз на день -->
-        <div v-if="forecast" class="forecast-section">
-          <h3>Ваш прогноз на день:</h3>
-          <p>{{ forecast }}</p>
-        </div>
+
         <!-- Таймер -->
         <div class="timer">
           <p>Время с момента регистрации: {{ formattedTime }}</p>
-        </div>
-        <!-- Сообщение об ошибке -->
-        <div v-if="errorMessage" class="error-message">
-          <p>{{ errorMessage }}</p>
         </div>
       </div>
     </transition>
@@ -168,7 +162,6 @@ export default {
     });
   },
 };
-
 </script>
 
 <style scoped>
