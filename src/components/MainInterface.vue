@@ -134,6 +134,7 @@
 </template>
 
 <script>
+<script>
 import axios from "axios";
 
 export default {
@@ -174,6 +175,7 @@ export default {
       try {
         await this.initTelegramUser();
         await this.loadUserData();
+        await this.loadUserRequest(); // Загружаем запрос пользователя
       } catch (error) {
         console.error("Ошибка инициализации:", error);
       } finally {
@@ -185,7 +187,7 @@ export default {
       return new Promise((resolve, reject) => {
         if (window.Telegram?.WebApp) {
           const tg = window.Telegram.WebApp;
-          const initData = tg.initDataUnsafe;
+          const initData = JSON.parse(tg.initDataUnsafe);
           this.user.id = initData.user.id;
           this.user.fullName = `${initData.user.first_name} ${initData.user.last_name}`.trim() || "Пользователь";
           this.user.avatar = initData.user.photo_url || "";
@@ -205,13 +207,24 @@ export default {
 
     async loadUserData() {
       try {
-        const userResponse = await axios.get(`https://uniback-vwmy.onrender.com/user/${this.user.id}`);
+        const userResponse = await axios.get(`https://uniback-production.up.railway.app/user/${this.user.id}`);
         this.user = { ...this.user, ...userResponse.data };
 
-        const emotionsResponse = await axios.get(`https://uniback-vwmy.onrender.com/emotions/${this.user.id}`);
+        const emotionsResponse = await axios.get(`https://uniback-production.up.railway.app/emotions/${this.user.id}`);
         this.user.emotions = emotionsResponse.data;
       } catch (error) {
         console.error("Ошибка загрузки данных:", error);
+      }
+    },
+
+    async loadUserRequest() {
+      try {
+        const response = await axios.get(`https://uniback-production.up.railway.app/user/${this.user.id}`);
+        if (response.data.request) {
+          this.user.request = response.data.request; // Загружаем запрос из бэкенда
+        }
+      } catch (error) {
+        console.error("Ошибка при загрузке запроса:", error);
       }
     },
 
@@ -222,7 +235,7 @@ export default {
       }
 
       try {
-        const response = await axios.post("https://uniback-vwmy.onrender.com/emotion/", {
+        const response = await axios.post("https://uniback-production.up.railway.app/add_emotion", {
           telegram_id: this.user.id,
           state: this.newEmotion,
         });
@@ -238,7 +251,7 @@ export default {
 
     async deleteEmotion(emotionId) {
       try {
-        await axios.delete(`https://uniback-vwmy.onrender.com/emotion/${emotionId}`);
+        await axios.delete(`https://uniback-production.up.railway.app/emotion/${emotionId}`);
         this.user.emotions = this.user.emotions.filter((e) => e.id !== emotionId);
       } catch (error) {
         console.error("Ошибка удаления эмоции:", error);
@@ -246,47 +259,25 @@ export default {
       }
     },
 
-    async generateForecast() {
-      try {
-        const response = await axios.get(`https://uniback-vwmy.onrender.com/forecast/${this.user.id}`);
-        this.forecast = response.data.forecast;
-      } catch (error) {
-        console.error("Ошибка при генерации прогноза:", error);
-        this.showAlert("Не удалось сгенерировать прогноз. Попробуйте снова.");
-      }
-    },
-
     async updateRequest(request) {
       try {
-        await axios.post("https://uniback-vwmy.onrender.com/update_request", {
+        await axios.post("https://uniback-production.up.railway.app/update_request", {
           telegram_id: this.user.id,
           request: request,
         });
+        this.user.request = request; // Обновляем запрос локально
       } catch (error) {
         console.error("Ошибка при обновлении запроса:", error);
       }
     },
 
-    async updateForecast(forecast) {
+    async generateForecast() {
       try {
-        await axios.post("https://uniback-vwmy.onrender.com/update_forecast", {
-          telegram_id: this.user.id,
-          forecast: forecast,
-        });
+        const response = await axios.get(`https://uniback-production.up.railway.app/forecast/${this.user.id}`);
+        this.forecast = response.data.forecast;
       } catch (error) {
-        console.error("Ошибка при обновлении прогноза:", error);
-      }
-    },
-
-    async updateUser() {
-      try {
-        await axios.post("https://uniback-vwmy.onrender.com/update_user", {
-          telegram_id: this.user.id,
-          full_name: this.user.fullName,
-          avatar_url: this.user.avatar,
-        });
-      } catch (error) {
-        console.error("Ошибка при обновлении данных пользователя:", error);
+        console.error("Ошибка при генерации прогноза:", error);
+        this.showAlert("Не удалось сгенерировать прогноз. Попробуйте снова.");
       }
     },
 
@@ -299,9 +290,8 @@ export default {
     },
 
     selectRequest(request) {
-      this.user.request = request;
+      this.updateRequest(request); // Сохраняем запрос на бэкенде
       this.showRequestModal = false;
-      this.updateRequest(request); // Сохраняем запрос в БД
     },
 
     showAlert(message) {
