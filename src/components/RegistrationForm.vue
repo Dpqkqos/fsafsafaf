@@ -1,5 +1,10 @@
 <template>
   <div class="app-container">
+    <!-- Лоадер -->
+    <div v-if="isCheckingRegistration" class="loader">
+      Проверка регистрации...
+    </div>
+
     <!-- Приветственное сообщение -->
     <transition name="fade" @after-leave="showRegistrationText = true">
       <div v-if="showGreeting" class="greeting-message">
@@ -69,6 +74,7 @@ export default {
       startTime: null,
       currentTime: null,
       timerInterval: null,
+      isCheckingRegistration: true, // Флаг для проверки регистрации
     };
   },
   computed: {
@@ -112,13 +118,16 @@ export default {
       try {
         const response = await axios.get(`uniback-production.up.railway.app/user/${this.telegramId}`);
         if (response.data) {
-          this.$router.push({ name: 'MainInterface' }); // Переход на главный интерфейс, если пользователь зарегистрирован
+          localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
+          this.$router.push({ name: 'MainInterface' }); // Переход на главный интерфейс
         } else {
-          this.showRegistrationForm = true; // Показать форму регистрации, если пользователь не зарегистрирован
+          this.showRegistrationForm = true; // Показать форму регистрации
         }
       } catch (error) {
         console.error("Ошибка при проверке регистрации:", error);
         this.showRegistrationForm = true; // Показать форму регистрации в случае ошибки
+      } finally {
+        this.isCheckingRegistration = false; // Завершаем проверку
       }
     },
     async submitRegistration() {
@@ -133,7 +142,8 @@ export default {
 
       try {
         await axios.post("uniback-production.up.railway.app/register", userData);
-        this.$router.push({ name: 'MainInterface' }); // Переход на главный интерфейс после успешной регистрации
+        localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
+        this.$router.push({ name: 'MainInterface' }); // Переход на главный интерфейс
       } catch (error) {
         console.error("Ошибка при регистрации:", error);
         alert("Не удалось зарегистрироваться. Попробуйте снова.");
@@ -153,6 +163,13 @@ export default {
     }
   },
   mounted() {
+    // Проверяем, зарегистрирован ли пользователь
+    if (localStorage.getItem("isRegistered") === "true") {
+      this.$router.push({ name: 'MainInterface' }); // Перенаправляем на главный интерфейс
+      return;
+    }
+
+    // Если не зарегистрирован, продолжаем стандартную логику
     setTimeout(() => {
       this.showGreeting = false; // Скрыть приветствие через 3 секунды
     }, 3000);
