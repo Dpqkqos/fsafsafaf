@@ -176,7 +176,7 @@ export default {
       try {
         await this.initTelegramUser();
         await this.loadUserData();
-        await this.loadUserRequest(); // Загружаем запрос пользователя
+        await this.loadUserRequest();
       } catch (error) {
         console.error("Ошибка инициализации:", error);
       } finally {
@@ -223,7 +223,7 @@ export default {
       try {
         const response = await axios.get(`${API_URL}/user/${this.user.id}`);
         if (response.data.request) {
-          this.user.request = response.data.request; // Загружаем запрос из бэкенда
+          this.user.request = response.data.request;
         }
       } catch (error) {
         console.error("Ошибка при загрузке запроса:", error);
@@ -308,7 +308,6 @@ export default {
     this.initializeApp();
   },
 };
-
 </script>
 <style>
 * {
