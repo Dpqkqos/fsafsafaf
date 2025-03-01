@@ -1,14 +1,14 @@
 <template>
   <div class="app-container">
     <!-- Приветственное сообщение -->
-    <transition name="fade" @after-leave="handleGreetingLeave">
+    <transition name="fade">
       <div v-if="showGreeting" class="greeting-message">
         <h2>Привет!</h2>
       </div>
     </transition>
 
     <!-- Сообщение о регистрации -->
-    <transition name="fade" @after-leave="handleRegistrationTextLeave">
+    <transition name="fade">
       <div v-if="showRegistrationText" class="registration-text">
         <h3>Чтобы продолжить, пройди регистрацию.</h3>
       </div>
@@ -109,11 +109,16 @@ export default {
           localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
           this.$router.push({ name: "MainInterface" }); // Переход на главный интерфейс
         } else {
-          this.showRegistrationText = true; // Показать текст о регистрации
+          // Показываем приветствие, затем текст о регистрации, затем форму
+          setTimeout(() => {
+            this.showGreeting = false; // Скрываем приветствие через 3 секунды
+          }, 3000);
         }
       } catch (error) {
         console.error("Ошибка при проверке регистрации:", error);
-        this.showRegistrationText = true;
+        setTimeout(() => {
+          this.showGreeting = false; // Скрываем приветствие через 3 секунды
+        }, 3000);
       } finally {
         this.isCheckingRegistration = false;
       }
@@ -150,6 +155,9 @@ export default {
     handleGreetingLeave() {
       // После исчезновения приветствия показываем текст о регистрации
       this.showRegistrationText = true;
+      setTimeout(() => {
+        this.showRegistrationText = false; // Скрываем текст через 3 секунды
+      }, 3000);
     },
 
     handleRegistrationTextLeave() {
@@ -170,14 +178,27 @@ export default {
       return;
     }
 
-    // Запускаем таймер для исчезновения приветствия через 3 секунды
-    setTimeout(() => {
-      this.showGreeting = false;
-    }, 3000);
-
     this.initializeTelegramUser().then(() => {
       this.checkUserRegistration();
     });
+  },
+
+  watch: {
+    showGreeting(newVal) {
+      if (!newVal) {
+        // Когда приветствие исчезает, показываем текст о регистрации
+        this.showRegistrationText = true;
+        setTimeout(() => {
+          this.showRegistrationText = false; // Скрываем текст через 3 секунды
+        }, 3000);
+      }
+    },
+    showRegistrationText(newVal) {
+      if (!newVal) {
+        // Когда текст о регистрации исчезает, показываем форму
+        this.showRegistrationForm = true;
+      }
+    },
   },
 };
 </script>
