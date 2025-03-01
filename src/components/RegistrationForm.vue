@@ -1,55 +1,56 @@
 <template>
   <div class="app-container">
-  <!-- Приветственное сообщение -->
-  <transition name="fade" @after-leave="showRegistrationText = true">
-    <div v-if="showGreeting" class="greeting-message">
-      <h2>Привет!</h2>
-    </div>
-  </transition>
-
-  <!-- Сообщение о регистрации -->
-  <transition name="fade" @after-leave="showRegistrationForm = true">
-    <div v-if="showRegistrationText" class="registration-text">
-      <h3>Чтобы продолжить, пройди регистрацию.</h3>
-    </div>
-  </transition>
-
-  <!-- Форма регистрации -->
-  <transition name="slide-up">
-    <div v-if="showRegistrationForm" class="registration-container">
-      <h2>Регистрация</h2>
-      <form @submit.prevent="submitRegistration">
-        <div class="form-group">
-          <label for="lastName">Фамилия:</label>
-          <input type="text" id="lastName" v-model="lastName" required />
-        </div>
-        <div class="form-group">
-          <label for="firstName">Имя:</label>
-          <input type="text" id="firstName" v-model="firstName" required />
-        </div>
-        <div class="form-group">
-          <label for="middleName">Отчество:</label>
-          <input type="text" id="middleName" v-model="middleName" />
-        </div>
-        <div class="form-group">
-          <label for="birthDate">Дата рождения:</label>
-          <input type="date" id="birthDate" v-model="birthDate" required />
-        </div>
-        <div class="form-group">
-          <label for="birthTime">Время рождения:</label>
-          <input type="time" id="birthTime" v-model="birthTime" required />
-        </div>
-        <button type="submit" class="submit-button">Зарегистрироваться</button>
-      </form>
-
-      <!-- Таймер -->
-      <div class="timer">
-        <p>Время с момента регистрации: {{ formattedTime }}</p>
+    <!-- Приветственное сообщение -->
+    <transition name="fade" @after-leave="handleGreetingLeave">
+      <div v-if="showGreeting" class="greeting-message">
+        <h2>Привет!</h2>
       </div>
-    </div>
-  </transition>
-</div>
+    </transition>
+
+    <!-- Сообщение о регистрации -->
+    <transition name="fade" @after-leave="handleRegistrationTextLeave">
+      <div v-if="showRegistrationText" class="registration-text">
+        <h3>Чтобы продолжить, пройди регистрацию.</h3>
+      </div>
+    </transition>
+
+    <!-- Форма регистрации -->
+    <transition name="slide-up">
+      <div v-if="showRegistrationForm" class="registration-container">
+        <h2>Регистрация</h2>
+        <form @submit.prevent="submitRegistration">
+          <div class="form-group">
+            <label for="lastName">Фамилия:</label>
+            <input type="text" id="lastName" v-model="lastName" required />
+          </div>
+          <div class="form-group">
+            <label for="firstName">Имя:</label>
+            <input type="text" id="firstName" v-model="firstName" required />
+          </div>
+          <div class="form-group">
+            <label for="middleName">Отчество:</label>
+            <input type="text" id="middleName" v-model="middleName" />
+          </div>
+          <div class="form-group">
+            <label for="birthDate">Дата рождения:</label>
+            <input type="date" id="birthDate" v-model="birthDate" required />
+          </div>
+          <div class="form-group">
+            <label for="birthTime">Время рождения:</label>
+            <input type="time" id="birthTime" v-model="birthTime" required />
+          </div>
+          <button type="submit" class="submit-button">Зарегистрироваться</button>
+        </form>
+
+        <!-- Таймер -->
+        <div class="timer">
+          <p>Время с момента регистрации: {{ formattedTime }}</p>
+        </div>
+      </div>
+    </transition>
+  </div>
 </template>
+
 <script>
 import axios from "axios";
 
@@ -83,15 +84,6 @@ export default {
       return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
     },
   },
-  watch: {
-    showRegistrationText(newVal) {
-      if (newVal) {
-        setTimeout(() => {
-          this.showRegistrationText = false; // Скрыть текст через 3 секунды
-        }, 3000);
-      }
-    },
-  },
   methods: {
     async initializeTelegramUser() {
       try {
@@ -117,11 +109,11 @@ export default {
           localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
           this.$router.push({ name: "MainInterface" }); // Переход на главный интерфейс
         } else {
-          this.showRegistrationForm = true; // Показать форму регистрации
+          this.showRegistrationText = true; // Показать текст о регистрации
         }
       } catch (error) {
         console.error("Ошибка при проверке регистрации:", error);
-        this.showRegistrationForm = true;
+        this.showRegistrationText = true;
       } finally {
         this.isCheckingRegistration = false;
       }
@@ -154,6 +146,16 @@ export default {
         this.currentTime = Date.now();
       }, 1000);
     },
+
+    handleGreetingLeave() {
+      // После исчезновения приветствия показываем текст о регистрации
+      this.showRegistrationText = true;
+    },
+
+    handleRegistrationTextLeave() {
+      // После исчезновения текста о регистрации показываем форму
+      this.showRegistrationForm = true;
+    },
   },
 
   beforeUnmount() {
@@ -168,6 +170,7 @@ export default {
       return;
     }
 
+    // Запускаем таймер для исчезновения приветствия через 3 секунды
     setTimeout(() => {
       this.showGreeting = false;
     }, 3000);
@@ -182,191 +185,192 @@ export default {
 <style scoped>
 /* Основные стили */
 * {
-font-family: "Montserrat", sans-serif;
-box-sizing: border-box;
-margin: 0;
-padding: 0;
+  font-family: "Montserrat", sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
+
 html,
 body {
-height: 100vh;
-line-height: 1.6;
-background: #fff;
-overflow: hidden;
+  height: 100vh;
+  line-height: 1.6;
+  background: #fff;
+  overflow: hidden;
 }
+
 .app-container {
-display: flex;
-justify-content: center;
-align-items: center;
-height: 100vh;
-overflow: hidden;
-position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
 }
 
 /* Градиентный текст */
 .greeting-message h2,
 .registration-text h3 {
-font-size: 1.5rem;
-background: linear-gradient(45deg, #f70eff, #7700ff, #750cff);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
+  font-size: 1.5rem;
+  background: linear-gradient(45deg, #f70eff, #7700ff, #750cff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Анимации */
 .fade-enter-active,
 .fade-leave-active {
-transition: opacity 1s ease;
+  transition: opacity 1s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
-opacity: 0;
+  opacity: 0;
 }
+
 .slide-up-enter-active,
 .slide-up-leave-active {
-transition: transform 0.5s ease, opacity 0.5s ease;
+  transition: transform 0.5s ease, opacity 0.5s ease;
 }
+
 .slide-up-enter-from {
-transform: translateY(100%);
-opacity: 0;
+  transform: translateY(100%);
+  opacity: 0;
 }
+
 .slide-up-leave-to {
-transform: translateY(-100%);
-opacity: 0;
+  transform: translateY(-100%);
+  opacity: 0;
 }
+
 .slide-up-enter-to,
 .slide-up-leave-from {
-transform: translateY(0);
-opacity: 1;
+  transform: translateY(0);
+  opacity: 1;
 }
 
 /* Стили формы регистрации */
 .registration-container {
-width: 90%;
-max-width: 400px;
-padding: 20px;
-background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff);
-background-size: 400% 400%;
-animation: gradient 4s ease infinite;
-border-radius: 10px;
-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-position: relative;
-top: 0;
-left: 0;
-margin: auto;
+  width: 90%;
+  max-width: 400px;
+  padding: 20px;
+  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff);
+  background-size: 400% 400%;
+  animation: gradient 4s ease infinite;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  top: 0;
+  left: 0;
+  margin: auto;
 }
+
 .registration-container h2 {
-color: #fff;
-text-align: center;
-margin-bottom: 20px;
-font-size: 1.2rem;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
 }
+
 .form-group {
-margin-bottom: 15px;
+  margin-bottom: 15px;
 }
+
 .form-group label {
-display: block;
-margin-bottom: 5px;
-font-weight: bold;
-color: #fff;
-font-size: 0.9rem;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #fff;
+  font-size: 0.9rem;
 }
+
 .form-group input {
-width: 100%;
-padding: 8px;
-border: 1px solid rgba(255, 255, 255, 0.3);
-border-radius: 4px;
-background: rgba(255, 255, 255, 0.1);
-color: #fff;
-font-size: 0.9rem;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.9rem;
 }
+
 .form-group input::placeholder {
-color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.7);
 }
+
 .submit-button {
-width: 100%;
-padding: 10px;
-background: #fb0eff;
-color: #fff;
-border: none;
-border-radius: 4px;
-cursor: pointer;
-transition: background 0.3s ease;
-font-size: 0.9rem;
+  width: 100%;
+  padding: 10px;
+  background: #fb0eff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-size: 0.9rem;
 }
+
 .submit-button:hover {
-background: #e62ee6;
+  background: #e62ee6;
 }
 
 /* Секция прогноза */
 .forecast-section {
-margin-top: 20px;
-padding: 10px;
-background: rgba(255, 255, 255, 0.1);
-border-radius: 4px;
+  margin-top: 20px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
 }
+
 .forecast-section h3 {
-font-size: 1rem;
+  font-size: 1rem;
 }
 
 /* Таймер */
 .timer {
-margin-top: 20px;
-font-size: 0.9rem;
-color: #fff;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #fff;
 }
 
 /* Сообщение об ошибке */
 .error-message {
-margin-top: 20px;
-padding: 10px;
-background: rgba(255, 0, 0, 0.1);
-color: #ff0000;
-border-radius: 4px;
-text-align: center;
+  margin-top: 20px;
+  padding: 10px;
+  background: rgba(255, 0, 0, 0.1);
+  color: #ff0000;
+  border-radius: 4px;
+  text-align: center;
 }
 
 /* Медиа-запросы для мобильных устройств */
 @media (max-width: 768px) {
-.registration-container {
-  width: 100%;
-  padding: 15px;
-}
-.form-group input {
-  font-size: 0.8rem;
-}
-.submit-button {
-  font-size: 0.8rem;
-  padding: 8px;
-}
-}
-@media (max-width: 420px) {
-  .app-container {
-    padding: 10px;
-  }
-
   .registration-container {
     width: 100%;
     padding: 15px;
   }
 
   .form-group input {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
 
   .submit-button {
-    font-size: 0.9rem;
-    padding: 10px;
+    font-size: 0.8rem;
+    padding: 8px;
   }
 }
+
 @keyframes gradient {
-0% {
-  background-position: 0% 50%;
-}
-50% {
-  background-position: 100% 50%;
-}
-100% {
-  background-position: 0% 50%;
-}
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 </style>
