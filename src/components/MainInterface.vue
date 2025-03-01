@@ -136,6 +136,8 @@
 <script>
 import axios from "axios";
 
+const API_URL = "https://uniback-production.up.railway.app";
+
 export default {
   data() {
     return {
@@ -182,34 +184,35 @@ export default {
       }
     },
 
-    initTelegramUser() {
-      return new Promise((resolve, reject) => {
+    async initTelegramUser() {
+      try {
         if (window.Telegram?.WebApp) {
           const tg = window.Telegram.WebApp;
-          const initData = JSON.parse(tg.initDataUnsafe);
+          const initData = tg.initDataUnsafe;
           this.user.id = initData.user.id;
-          this.user.fullName = `${initData.user.first_name} ${initData.user.last_name}`.trim() || "Пользователь";
-          this.user.avatar = initData.user.photo_url || "";
 
           // Развернуть приложение на весь экран
           tg.expand();
 
           // Включить подтверждение закрытия
           tg.enableClosingConfirmation();
-
-          resolve();
         } else {
-          reject("Telegram Web App не найден");
+          throw new Error("Telegram Web App не найден");
         }
-      });
+      } catch (error) {
+        console.error("Ошибка инициализации Telegram:", error);
+      }
     },
 
     async loadUserData() {
       try {
-        const userResponse = await axios.get(`https://uniback-production.up.railway.app/user/${this.user.id}`);
-        this.user = { ...this.user, ...userResponse.data };
+        const response = await axios.get(`${API_URL}/user/${this.user.id}`);
+        if (response.data) {
+          this.user.fullName = `${response.data.first_name} ${response.data.middle_name || ""}`.trim() || "Пользователь";
+          this.user.request = response.data.request;
+        }
 
-        const emotionsResponse = await axios.get(`https://uniback-production.up.railway.app/emotions/${this.user.id}`);
+        const emotionsResponse = await axios.get(`${API_URL}/emotions/${this.user.id}`);
         this.user.emotions = emotionsResponse.data;
       } catch (error) {
         console.error("Ошибка загрузки данных:", error);
@@ -218,7 +221,7 @@ export default {
 
     async loadUserRequest() {
       try {
-        const response = await axios.get(`https://uniback-production.up.railway.app/user/${this.user.id}`);
+        const response = await axios.get(`${API_URL}/user/${this.user.id}`);
         if (response.data.request) {
           this.user.request = response.data.request; // Загружаем запрос из бэкенда
         }
@@ -234,7 +237,7 @@ export default {
       }
 
       try {
-        const response = await axios.post("https://uniback-production.up.railway.app/add_emotion", {
+        const response = await axios.post(`${API_URL}/add_emotion`, {
           telegram_id: this.user.id,
           state: this.newEmotion,
         });
@@ -250,7 +253,7 @@ export default {
 
     async deleteEmotion(emotionId) {
       try {
-        await axios.delete(`https://uniback-production.up.railway.app/emotion/${emotionId}`);
+        await axios.delete(`${API_URL}/emotion/${emotionId}`);
         this.user.emotions = this.user.emotions.filter((e) => e.id !== emotionId);
       } catch (error) {
         console.error("Ошибка удаления эмоции:", error);
@@ -260,11 +263,11 @@ export default {
 
     async updateRequest(request) {
       try {
-        await axios.post("https://uniback-production.up.railway.app/update_request", {
+        await axios.post(`${API_URL}/update_request`, {
           telegram_id: this.user.id,
           request: request,
         });
-        this.user.request = request; // Обновляем запрос локально
+        this.user.request = request;
       } catch (error) {
         console.error("Ошибка при обновлении запроса:", error);
       }
@@ -272,7 +275,7 @@ export default {
 
     async generateForecast() {
       try {
-        const response = await axios.get(`https://uniback-production.up.railway.app/forecast/${this.user.id}`);
+        const response = await axios.get(`${API_URL}/forecast/${this.user.id}`);
         this.forecast = response.data.forecast;
       } catch (error) {
         console.error("Ошибка при генерации прогноза:", error);
@@ -289,7 +292,7 @@ export default {
     },
 
     selectRequest(request) {
-      this.updateRequest(request); // Сохраняем запрос на бэкенде
+      this.updateRequest(request);
       this.showRequestModal = false;
     },
 
@@ -305,6 +308,7 @@ export default {
     this.initializeApp();
   },
 };
+
 </script>
 <style>
 * {
