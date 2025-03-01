@@ -190,6 +190,7 @@ export default {
           const tg = window.Telegram.WebApp;
           const initData = tg.initDataUnsafe;
           this.user.id = initData.user.id;
+          this.user.avatar = initData.user.photo_url;  // Берем аватарку из Telegram
 
           // Развернуть приложение на весь экран
           tg.expand();
@@ -270,16 +271,6 @@ export default {
         this.user.request = request;
       } catch (error) {
         console.error("Ошибка при обновлении запроса:", error);
-      }
-    },
-
-    async generateForecast() {
-      try {
-        const response = await axios.get(`${API_URL}/forecast/${this.user.id}`);
-        this.forecast = response.data.forecast;
-      } catch (error) {
-        console.error("Ошибка при генерации прогноза:", error);
-        this.showAlert("Не удалось сгенерировать прогноз. Попробуйте снова.");
       }
     },
 
