@@ -49,9 +49,10 @@
     </transition>
   </div>
 </template>
-
 <script>
 import axios from "axios";
+
+const API_URL = "https://uniback-1.onrender.com";
 
 export default {
   data() {
@@ -92,57 +93,59 @@ export default {
   },
   methods: {
     async initializeTelegramUser() {
-      if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
-        const initData = tg.initDataUnsafe; // Убираем JSON.parse, так как это уже объект
-        this.telegramId = initData.user.id;
+      try {
+        if (window.Telegram?.WebApp) {
+          const tg = window.Telegram.WebApp;
+          const initData = tg.initDataUnsafe;
+          this.telegramId = initData.user.id;
 
-        // Заполнение данных пользователя из Telegram
-        this.firstName =  "";
-        this.lastName = "";
-        this.middleName =  "";
-
-        // Развернуть приложение на весь экран
-        tg.expand();
-      } else {
-        alert("Telegram Web App не поддерживается.");
+          // Развернуть приложение на весь экран
+          tg.expand();
+        } else {
+          alert("Telegram Web App не поддерживается.");
+        }
+      } catch (error) {
+        console.error("Ошибка при инициализации Telegram:", error);
       }
     },
+
     async checkUserRegistration() {
       try {
-        const response = await axios.get(`https://uniback-vwmy.onrender.com/user/${this.telegramId}`);
+        const response = await axios.get(`${API_URL}/user/${this.telegramId}`);
         if (response.data) {
           localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
-          this.$router.push({ name: 'MainInterface' }); // Переход на главный интерфейс
+          this.$router.push({ name: "MainInterface" }); // Переход на главный интерфейс
         } else {
           this.showRegistrationForm = true; // Показать форму регистрации
         }
       } catch (error) {
         console.error("Ошибка при проверке регистрации:", error);
-        this.showRegistrationForm = true; // Показать форму регистрации в случае ошибки
+        this.showRegistrationForm = true;
       } finally {
-        this.isCheckingRegistration = false; // Завершаем проверку
+        this.isCheckingRegistration = false;
       }
     },
+
     async submitRegistration() {
       const userData = {
         telegram_id: this.telegramId,
-        lastName: this.lastName,
-        firstName: this.firstName,
-        middleName: this.middleName,
-        birthDate: this.birthDate,
-        birthTime: this.birthTime,
+        last_name: this.lastName,
+        first_name: this.firstName,
+        middle_name: this.middleName,
+        birth_date: this.birthDate,
+        birth_time: this.birthTime,
       };
 
       try {
-        const response = await axios.post("https://uniback-vwmy.onrender.com/register", userData);
-        localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
-        this.$router.push({ name: 'MainInterface' }); // Переход на главный интерфейс
+        await axios.post(`${API_URL}/register`, userData);
+        localStorage.setItem("isRegistered", "true");
+        this.$router.push({ name: "MainInterface" });
       } catch (error) {
         console.error("Ошибка при регистрации:", error);
         alert("Не удалось зарегистрироваться. Попробуйте снова.");
       }
     },
+
     startTimer() {
       this.startTime = Date.now();
       this.currentTime = Date.now();
@@ -151,28 +154,29 @@ export default {
       }, 1000);
     },
   },
+
   beforeUnmount() {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
     }
   },
+
   mounted() {
-    // Проверяем, зарегистрирован ли пользователь
     if (localStorage.getItem("isRegistered") === "true") {
-      this.$router.push({ name: 'MainInterface' }); // Перенаправляем на главный интерфейс
+      this.$router.push({ name: "MainInterface" });
       return;
     }
 
-    // Если не зарегистрирован, продолжаем стандартную логику
     setTimeout(() => {
-      this.showGreeting = false; // Скрыть приветствие через 3 секунды
+      this.showGreeting = false;
     }, 3000);
 
     this.initializeTelegramUser().then(() => {
-      this.checkUserRegistration(); // Проверка регистрации пользователя
+      this.checkUserRegistration();
     });
   },
 };
+
 </script>
 
 <style scoped>
