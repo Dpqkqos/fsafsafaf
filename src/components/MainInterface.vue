@@ -712,6 +712,31 @@ html, body {
   color: white;
 }
 
+@media (max-width: 420px) {
+  .app-container {
+    padding: 10px;
+  }
+
+  .profile-card, .forecast-card, .emotions-table {
+    width: 100%;
+    margin: 5px 0;
+  }
+
+  .user-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .button-container {
+    width: 100%;
+  }
+
+  .change-request-button, .add-button {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+}
+  
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
