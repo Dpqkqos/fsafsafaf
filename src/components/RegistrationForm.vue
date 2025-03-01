@@ -56,128 +56,127 @@ import axios from "axios";
 const API_URL = "https://uniback-1.onrender.com";
 
 export default {
-data() {
-  return {
-    showGreeting: true,
-    showRegistrationText: false,
-    showRegistrationForm: false,
-    telegramId: null,
-    lastName: "",
-    firstName: "",
-    middleName: "",
-    birthDate: "",
-    birthTime: "",
-    startTime: null,
-    currentTime: null,
-    timerInterval: null,
-    isCheckingRegistration: true, // Флаг для проверки регистрации
-  };
-},
-computed: {
-  formattedTime() {
-    if (!this.startTime || !this.currentTime) return "00:00:00";
-    const diff = Math.floor((this.currentTime - this.startTime) / 1000);
-    const hours = Math.floor(diff / 3600);
-    const minutes = Math.floor((diff % 3600) / 60);
-    const seconds = diff % 60;
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-  },
-},
-watch: {
-  showRegistrationText(newVal) {
-    if (newVal) {
-      setTimeout(() => {
-        this.showRegistrationText = false; // Скрыть текст через 3 секунды
-      }, 3000);
-    }
-  },
-},
-methods: {
-  async initializeTelegramUser() {
-    try {
-      if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
-        const initData = tg.initDataUnsafe;
-        this.telegramId = initData.user.id;
-
-        // Развернуть приложение на весь экран
-        tg.expand();
-      } else {
-        alert("Telegram Web App не поддерживается.");
-      }
-    } catch (error) {
-      console.error("Ошибка при инициализации Telegram:", error);
-    }
-  },
-
-  async checkUserRegistration() {
-    try {
-      const response = await axios.get(`${API_URL}/user/${this.telegramId}`);
-      if (response.data) {
-        localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
-        this.$router.push({ name: "MainInterface" }); // Переход на главный интерфейс
-      } else {
-        this.showRegistrationForm = true; // Показать форму регистрации
-      }
-    } catch (error) {
-      console.error("Ошибка при проверке регистрации:", error);
-      this.showRegistrationForm = true;
-    } finally {
-      this.isCheckingRegistration = false;
-    }
-  },
-
-  async submitRegistration() {
-    const userData = {
-      telegram_id: this.telegramId,
-      last_name: this.lastName,
-      first_name: this.firstName,
-      middle_name: this.middleName,
-      birth_date: this.birthDate,
-      birth_time: this.birthTime,
+  data() {
+    return {
+      showGreeting: true,
+      showRegistrationText: false,
+      showRegistrationForm: false,
+      telegramId: null,
+      lastName: "",
+      firstName: "",
+      middleName: "",
+      birthDate: "",
+      birthTime: "",
+      startTime: null,
+      currentTime: null,
+      timerInterval: null,
+      isCheckingRegistration: true, // Флаг для проверки регистрации
     };
+  },
+  computed: {
+    formattedTime() {
+      if (!this.startTime || !this.currentTime) return "00:00:00";
+      const diff = Math.floor((this.currentTime - this.startTime) / 1000);
+      const hours = Math.floor(diff / 3600);
+      const minutes = Math.floor((diff % 3600) / 60);
+      const seconds = diff % 60;
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    },
+  },
+  watch: {
+    showRegistrationText(newVal) {
+      if (newVal) {
+        setTimeout(() => {
+          this.showRegistrationText = false; // Скрыть текст через 3 секунды
+        }, 3000);
+      }
+    },
+  },
+  methods: {
+    async initializeTelegramUser() {
+      try {
+        if (window.Telegram?.WebApp) {
+          const tg = window.Telegram.WebApp;
+          const initData = tg.initDataUnsafe;
+          this.telegramId = initData.user.id;
 
-    try {
-      await axios.post(`${API_URL}/register`, userData);
-      localStorage.setItem("isRegistered", "true");
-      this.$router.push({ name: "MainInterface" });
-    } catch (error) {
-      console.error("Ошибка при регистрации:", error);
-      alert("Не удалось зарегистрироваться. Попробуйте снова.");
+          // Развернуть приложение на весь экран
+          tg.expand();
+        } else {
+          alert("Telegram Web App не поддерживается.");
+        }
+      } catch (error) {
+        console.error("Ошибка при инициализации Telegram:", error);
+      }
+    },
+
+    async checkUserRegistration() {
+      try {
+        const response = await axios.get(`${API_URL}/user/${this.telegramId}`);
+        if (response.data) {
+          localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
+          this.$router.push({ name: "MainInterface" }); // Переход на главный интерфейс
+        } else {
+          this.showRegistrationForm = true; // Показать форму регистрации
+        }
+      } catch (error) {
+        console.error("Ошибка при проверке регистрации:", error);
+        this.showRegistrationForm = true;
+      } finally {
+        this.isCheckingRegistration = false;
+      }
+    },
+
+    async submitRegistration() {
+      const userData = {
+        telegram_id: this.telegramId,
+        last_name: this.lastName,
+        first_name: this.firstName,
+        middle_name: this.middleName,
+        birth_date: this.birthDate,
+        birth_time: this.birthTime,
+      };
+
+      try {
+        await axios.post(`${API_URL}/register`, userData);
+        localStorage.setItem("isRegistered", "true");
+        this.$router.push({ name: "MainInterface" });
+      } catch (error) {
+        console.error("Ошибка при регистрации:", error);
+        alert("Не удалось зарегистрироваться. Попробуйте снова.");
+      }
+    },
+
+    startTimer() {
+      this.startTime = Date.now();
+      this.currentTime = Date.now();
+      this.timerInterval = setInterval(() => {
+        this.currentTime = Date.now();
+      }, 1000);
+    },
+  },
+
+  beforeUnmount() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
     }
   },
 
-  startTimer() {
-    this.startTime = Date.now();
-    this.currentTime = Date.now();
-    this.timerInterval = setInterval(() => {
-      this.currentTime = Date.now();
-    }, 1000);
+  mounted() {
+    if (localStorage.getItem("isRegistered") === "true") {
+      this.$router.push({ name: "MainInterface" });
+      return;
+    }
+
+    setTimeout(() => {
+      this.showGreeting = false;
+    }, 3000);
+
+    this.initializeTelegramUser().then(() => {
+      this.checkUserRegistration();
+    });
   },
-},
-
-beforeUnmount() {
-  if (this.timerInterval) {
-    clearInterval(this.timerInterval);
-  }
-},
-
-mounted() {
-  if (localStorage.getItem("isRegistered") === "true") {
-    this.$router.push({ name: "MainInterface" });
-    return;
-  }
-
-  setTimeout(() => {
-    this.showGreeting = false;
-  }, 3000);
-
-  this.initializeTelegramUser().then(() => {
-    this.checkUserRegistration();
-  });
-},
 };
-
 </script>
 
 <style scoped>
@@ -340,7 +339,25 @@ text-align: center;
   padding: 8px;
 }
 }
+@media (max-width: 420px) {
+  .app-container {
+    padding: 10px;
+  }
 
+  .registration-container {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .form-group input {
+    font-size: 0.9rem;
+  }
+
+  .submit-button {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+}
 @keyframes gradient {
 0% {
   background-position: 0% 50%;
