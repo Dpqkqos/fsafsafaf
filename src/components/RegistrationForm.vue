@@ -1,10 +1,4 @@
 <template>
-  <div class="app-container">
-    <!-- Лоадер -->
-    <div v-if="isCheckingRegistration" class="loader">
-      Проверка регистрации...
-    </div>
-
     <!-- Приветственное сообщение -->
     <transition name="fade" @after-leave="showRegistrationText = true">
       <div v-if="showGreeting" class="greeting-message">
