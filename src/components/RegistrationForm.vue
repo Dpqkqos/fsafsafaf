@@ -98,9 +98,9 @@ export default {
         this.telegramId = initData.user.id;
 
         // Заполнение данных пользователя из Telegram
-        this.firstName = initData.user.first_name || "";
-        this.lastName = initData.user.last_name || "";
-        this.middleName = initData.user.username || "";
+        this.firstName =  "";
+        this.lastName = "";
+        this.middleName =  "";
 
         // Развернуть приложение на весь экран
         tg.expand();
