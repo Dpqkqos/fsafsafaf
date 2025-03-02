@@ -41,11 +41,6 @@
           </div>
           <button type="submit" class="submit-button">Зарегистрироваться</button>
         </form>
-
-        <!-- Таймер -->
-        <div class="timer">
-          <p>Время с момента регистрации: {{ formattedTime }}</p>
-        </div>
       </div>
     </transition>
   </div>
@@ -66,20 +61,7 @@ export default {
       middleName: "",
       birthDate: "",
       birthTime: "",
-      startTime: null,
-      currentTime: null,
-      timerInterval: null,
     };
-  },
-  computed: {
-    formattedTime() {
-      if (!this.startTime || !this.currentTime) return "00:00:00";
-      const diff = Math.floor((this.currentTime - this.startTime) / 1000);
-      const hours = Math.floor(diff / 3600);
-      const minutes = Math.floor((diff % 3600) / 60);
-      const seconds = diff % 60;
-      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-    },
   },
   methods: {
     async initializeTelegramUser() {
@@ -88,6 +70,9 @@ export default {
         const initData = tg.initDataUnsafe;
         this.telegramId = initData.user.id;
 
+        // Установка белого фона
+        tg.setBackgroundColor("#ffffff"); // Белый цвет фона
+
         // Развернуть приложение на весь экран
         tg.expand();
       } else {
@@ -95,6 +80,12 @@ export default {
       }
     },
     async submitRegistration() {
+      // Валидация формы
+      if (!this.lastName || !this.firstName || !this.birthDate || !this.birthTime) {
+        alert("Пожалуйста, заполните все обязательные поля.");
+        return;
+      }
+
       const userData = {
         tg_id: this.telegramId,
         surname: this.lastName,
@@ -105,28 +96,22 @@ export default {
       };
 
       try {
-        const response = await axios.post("https://uniback-1.onrender.com/api/register", userData);
+        const response = await axios.post("https://uniback-1.onrender.com/api/register", userData, {
+          headers: {
+            "Content-Type": "application/json", // Убедитесь, что заголовки правильные
+          },
+        });
+
         if (response.data.status === "success") {
           alert("Регистрация прошла успешно!");
-          this.startTimer();
+        } else {
+          alert("Ошибка при регистрации: " + response.data.message);
         }
       } catch (error) {
         console.error("Ошибка при регистрации:", error);
         alert("Не удалось зарегистрироваться. Попробуйте снова.");
       }
     },
-    startTimer() {
-      this.startTime = Date.now();
-      this.currentTime = Date.now();
-      this.timerInterval = setInterval(() => {
-        this.currentTime = Date.now();
-      }, 1000);
-    },
-  },
-  beforeUnmount() {
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
   },
   mounted() {
     setTimeout(() => {
@@ -151,7 +136,7 @@ html,
 body {
   height: 100vh;
   line-height: 1.6;
-  background: #fff !important; /* Белый фон для всего приложения */
+  background: #fff; /* Белый фон для всего приложения */
   overflow: hidden;
 }
 
@@ -162,7 +147,7 @@ body {
   height: 100vh;
   overflow: hidden;
   position: relative;
-  background: #fff !important; /* Белый фон для контейнера */
+  background: #fff; /* Белый фон для контейнера */
 }
 
 /* Градиентный текст */
@@ -172,6 +157,7 @@ body {
   background: linear-gradient(45deg, #f70eff, #7700ff, #750cff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: #f70eff; /* Фолбэк для браузеров, которые не поддерживают градиентный текст */
 }
 
 /* Анимации */
@@ -271,14 +257,6 @@ body {
   background: #e62ee6; /* Темно-фиолетовый цвет при наведении */
 }
 
-/* Таймер */
-.timer {
-  margin-top: 20px;
-  font-size: 0.9rem;
-  color: #fff; /* Белый текст для таймера */
-  text-align: center;
-}
-
 /* Медиа-запросы для мобильных устройств */
 @media (max-width: 768px) {
   .registration-container {
@@ -293,6 +271,21 @@ body {
   .submit-button {
     font-size: 0.8rem;
     padding: 8px;
+  }
+}
+
+@media (max-width: 320px) {
+  .registration-container {
+    padding: 10px;
+  }
+
+  .form-group input {
+    font-size: 0.7rem;
+  }
+
+  .submit-button {
+    font-size: 0.7rem;
+    padding: 6px;
   }
 }
 
