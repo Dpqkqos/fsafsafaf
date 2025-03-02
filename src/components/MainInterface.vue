@@ -6,87 +6,135 @@
     <!-- Основной контент -->
     <template v-else>
       <!-- Профиль -->
-      <div class="profile-section">
-        <h1 class="main-title">Личная карточка<span class="accent">✦</span></h1>
-        <div class="profile-card">
-          <img :src="user.avatar" class="user-avatar" alt="Аватар" />
-          <div class="user-info">
-            <h2 class="user-name">{{ user.fullName }}</h2>
-            <div class="user-stats">
-              <div class="stat-item">
-                <span class="icon">✦</span>
-                {{ user.daysOnPlatform }} {{ daysText }} на платформе
+      <transition name="slide-up" appear>
+        <div class="profile-section">
+          <h1 class="main-title">Личная карточка<span class="accent">✦</span></h1>
+          <div class="profile-card">
+            <img :src="user.avatar" class="user-avatar" alt="Аватар" />
+            <div class="user-info">
+              <h2 class="user-name">{{ user.fullName }}</h2>
+              <div class="user-stats">
+                <div class="stat-item">
+                  <span class="icon">✦</span>
+                  {{ user.daysOnPlatform }} {{ daysText }} на платформе
+                </div>
+                <div class="stat-item">
+                  <span class="icon">✦</span>
+                  Ваш запрос: {{ user.request }}
+                </div>
               </div>
-              <div class="stat-item">
-                <span class="icon">✦</span>
-                Ваш запрос: {{ user.request }}
-              </div>
-            </div>
-            <button @click="toggleRequestWindow" class="change-request-button">
-              {{ showRequestModal ? 'Закрыть' : 'Изменить запрос' }}
-            </button>
-            <div v-if="showRequestModal" class="request-window">
-              <div class="requests-list">
-                <button
-                  v-for="(request, index) in requests"
-                  :key="index"
-                  @click="selectRequest(request)"
-                  class="request-item"
+              <!-- Кнопка "Изменить запрос" -->
+              <div class="button-container">
+                <button 
+                  @click="toggleRequestWindow" 
+                  :class="{ 'expanded': showRequestModal }" 
+                  class="change-request-button"
                 >
-                  {{ request }}
+                  {{ showRequestModal ? 'Закрыть' : 'Изменить запрос' }}
                 </button>
+                <transition name="expand">
+                  <div v-if="showRequestModal" class="request-window">
+                    <div class="requests-list">
+                      <button
+                        v-for="(request, index) in requests"
+                        :key="index"
+                        @click="selectRequest(request)"
+                        class="request-item"
+                      >
+                        {{ request }}
+                      </button>
+                    </div>
+                  </div>
+                </transition>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </transition>
 
       <!-- Прогноз -->
-      <div class="forecast-section">
-        <h2 class="section-title">Прогноз на день</h2>
-        <div class="forecast-card">
-          <div class="forecast-content">
-            <span class="forecast-icon">◎</span>
-            <p>{{ forecast || 'Сегодня будет прекрасный день!' }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Эмоции -->
-      <div class="emotions-section">
-        <div class="emotions-header">
-          <h2 class="section-title">Ведение эмоционального состояния<span class="accent">✦</span></h2>
-          <button @click="toggleEmotionWindow" class="add-button">
-            {{ showEmotionModal ? 'Закрыть' : '+ Добавить' }}
-          </button>
-          <div v-if="showEmotionModal" class="emotion-window">
-            <textarea v-model="newEmotion" placeholder="Сегодня я чувствую..."></textarea>
-            <button @click="addEmotion" class="save-btn">Сохранить</button>
-          </div>
-        </div>
-        <div class="emotions-table">
-          <div class="table-header">
-            <div class="day-col">День</div>
-            <div class="emotion-col">Эмоциональное состояние</div>
-            <div class="action-col"></div>
-          </div>
-          <div v-for="(emotion, index) in reversedEmotions" :key="emotion.id" class="emotion-row">
-            <div class="day-col">{{ totalEmotions - index }}</div>
-            <div class="emotion-col">{{ emotion.state }}</div>
-            <div class="action-col">
-              <button @click="deleteEmotion(emotion.id)" class="delete-btn">🗑️</button>
+      <transition name="slide-up" appear>
+        <div class="forecast-section">
+          <h2 class="section-title">Прогноз на день</h2>
+          <div class="forecast-card">
+            <div class="forecast-content">
+              <span class="forecast-icon">◎</span>
+              <p>{{ forecast || 'Сегодня будет прекрасный день!' }}</p>
             </div>
           </div>
         </div>
-      </div>
+      </transition>
+
+      <!-- Эмоции -->
+      <transition name="slide-up" appear>
+        <div class="emotions-section">
+          <div class="emotions-header">
+            <h2 class="section-title">
+              <span class="title-line">Ведение эмоционального</span>
+              <span class="title-line">состояния<span class="accent">✦</span></span>
+            </h2>
+            <!-- Кнопка "Добавить эмоцию" -->
+            <div class="button-container">
+              <button 
+                @click="toggleEmotionWindow" 
+                :class="{ 'expanded': showEmotionModal }" 
+                class="add-button"
+              >
+                {{ showEmotionModal ? 'Закрыть' : '+ Добавить' }}
+              </button>
+              <transition name="expand">
+                <div v-if="showEmotionModal" class="emotion-window">
+                  <textarea 
+                    v-model="newEmotion" 
+                    placeholder="Сегодня я чувствую..."
+                    class="styled-textarea"
+                  ></textarea>
+                  <button @click="addEmotion" class="save-btn">Сохранить</button>
+                </div>
+              </transition>
+            </div>
+          </div>
+
+          <div class="emotions-table">
+            <div class="table-header">
+              <div class="day-col">День</div>
+              <div class="emotion-col">Эмоциональное состояние</div>
+              <div class="action-col"></div>
+            </div>
+
+            <transition-group name="list" tag="div">
+              <div 
+                v-for="(emotion, index) in reversedEmotions" 
+                :key="emotion.id" 
+                class="emotion-row"
+              >
+                <div class="day-col">{{ totalEmotions - index }}</div>
+                <div class="emotion-col">{{ emotion.state }}</div>
+                <div class="action-col">
+                  <button 
+                    class="edit-btn" 
+                    @click="openEditModal(index)"
+                  >
+                    ✎
+                  </button>
+                  <button 
+                    class="delete-btn" 
+                    @click="deleteEmotion(emotion.id)"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            </transition-group>
+          </div>
+        </div>
+      </transition>
     </template>
   </div>
 </template>
 
 <script>
 import axios from "axios";
-
-const API_URL = "https://uniback-1.onrender.com"; // Бэкенд
 
 export default {
   data() {
@@ -126,7 +174,6 @@ export default {
       try {
         await this.initTelegramUser();
         await this.loadUserData();
-        await this.loadUserRequest();
       } catch (error) {
         console.error("Ошибка инициализации:", error);
       } finally {
@@ -134,46 +181,37 @@ export default {
       }
     },
 
-    async initTelegramUser() {
-      try {
+    initTelegramUser() {
+      return new Promise((resolve, reject) => {
         if (window.Telegram?.WebApp) {
           const tg = window.Telegram.WebApp;
-          const initData = tg.initDataUnsafe;
+          const initData = JSON.parse(tg.initDataUnsafe);
           this.user.id = initData.user.id;
-          this.user.avatar = initData.user.photo_url;
+          this.user.fullName = `${initData.user.first_name} ${initData.user.last_name}`.trim() || "Пользователь";
+          this.user.avatar = initData.user.photo_url || "";
+
+          // Развернуть приложение на весь экран
           tg.expand();
+
+          // Включить подтверждение закрытия
           tg.enableClosingConfirmation();
+
+          resolve();
         } else {
-          throw new Error("Telegram Web App не найден");
+          reject("Telegram Web App не найден");
         }
-      } catch (error) {
-        console.error("Ошибка инициализации Telegram:", error);
-      }
+      });
     },
 
     async loadUserData() {
       try {
-        const response = await axios.get(`${API_URL}/user/${this.user.id}`);
-        if (response.data) {
-          this.user.fullName = `${response.data.first_name} ${response.data.middle_name || ""}`.trim() || "Пользователь";
-          this.user.request = response.data.request;
-        }
+        const userResponse = await axios.get(`uniback-production.up.railway.app/user/${this.user.id}`);
+        this.user = { ...this.user, ...userResponse.data };
 
-        const emotionsResponse = await axios.get(`${API_URL}/emotions/${this.user.id}`);
+        const emotionsResponse = await axios.get(`uniback-production.up.railway.app/emotions/${this.user.id}`);
         this.user.emotions = emotionsResponse.data;
       } catch (error) {
         console.error("Ошибка загрузки данных:", error);
-      }
-    },
-
-    async loadUserRequest() {
-      try {
-        const response = await axios.get(`${API_URL}/user/${this.user.id}`);
-        if (response.data.request) {
-          this.user.request = response.data.request;
-        }
-      } catch (error) {
-        console.error("Ошибка при загрузке запроса:", error);
       }
     },
 
@@ -184,7 +222,7 @@ export default {
       }
 
       try {
-        const response = await axios.post(`${API_URL}/add_emotion`, {
+        const response = await axios.post("uniback-production.up.railway.app/emotion/", {
           telegram_id: this.user.id,
           state: this.newEmotion,
         });
@@ -200,7 +238,7 @@ export default {
 
     async deleteEmotion(emotionId) {
       try {
-        await axios.delete(`${API_URL}/emotion/${emotionId}`);
+        await axios.delete(`uniback-production.up.railway.app/emotion/${emotionId}`);
         this.user.emotions = this.user.emotions.filter((e) => e.id !== emotionId);
       } catch (error) {
         console.error("Ошибка удаления эмоции:", error);
@@ -208,15 +246,13 @@ export default {
       }
     },
 
-    async updateRequest(request) {
+    async generateForecast() {
       try {
-        await axios.post(`${API_URL}/update_request`, {
-          telegram_id: this.user.id,
-          request: request,
-        });
-        this.user.request = request;
+        const response = await axios.get(`uniback-production.up.railway.app/forecast/${this.user.id}`);
+        this.forecast = response.data.forecast;
       } catch (error) {
-        console.error("Ошибка при обновлении запроса:", error);
+        console.error("Ошибка при генерации прогноза:", error);
+        this.showAlert("Не удалось сгенерировать прогноз. Попробуйте снова.");
       }
     },
 
@@ -229,7 +265,7 @@ export default {
     },
 
     selectRequest(request) {
-      this.updateRequest(request);
+      this.user.request = request;
       this.showRequestModal = false;
     },
 
@@ -650,31 +686,6 @@ html, body {
   color: white;
 }
 
-@media (max-width: 420px) {
-  .app-container {
-    padding: 10px;
-  }
-
-  .profile-card, .forecast-card, .emotions-table {
-    width: 100%;
-    margin: 5px 0;
-  }
-
-  .user-avatar {
-    width: 80px;
-    height: 80px;
-  }
-
-  .button-container {
-    width: 100%;
-  }
-
-  .change-request-button, .add-button {
-    font-size: 0.9rem;
-    padding: 10px;
-  }
-}
-  
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
@@ -684,23 +695,6 @@ html, body {
   }
   100% {
     background-position: 0% 50%;
-  }
-}
-
-@media (max-width: 768px) {
-  .profile-card, .forecast-card, .emotions-table {
-    width: 100%;
-    margin: 10px 0;
-  }
-
-  .user-avatar {
-    width: 80px;
-    height: 80px;
-  }
-
-  .change-request-button, .add-button {
-    font-size: 0.9rem;
-    padding: 10px;
   }
 }
 </style>
