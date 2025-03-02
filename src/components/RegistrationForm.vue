@@ -193,12 +193,18 @@ body {
 
 /* Стили формы регистрации */
 .registration-container {
-  width: 90%; /* Занимает 90% ширины родительского контейнера */
-  max-width: 400px; /* Максимальная ширина для больших экранов */
+  width: 90%;
+  max-width: 400px;
   padding: 20px;
-  background: #f9f9f9; /* Светло-серый фон */
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff); /* Градиентный фон для формы */
+  background-size: 400% 400%;
+  animation: gradient 4s ease infinite;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  top: 0;
+  left: 0;
+  margin: auto;
 }
 
 .form-group {
