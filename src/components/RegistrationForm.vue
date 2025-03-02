@@ -193,20 +193,45 @@ body {
 
 /* Стили формы регистрации */
 .registration-container {
-  width: 90%;
-  max-width: 400px;
+  width: 90%; /* Занимает 90% ширины родительского контейнера */
+  max-width: 400px; /* Максимальная ширина для больших экранов */
   padding: 20px;
-  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff); /* Градиентный фон для формы */
-  background-size: 400% 400%;
-  animation: gradient 4s ease infinite;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  position: relative;
-  top: 0;
-  left: 0;
-  margin: auto;
+  background: #f9f9f9; /* Светло-серый фон */
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.submit-button:hover {
+  background: #0056b3;
+}
 .registration-container h2 {
   color: #fff; /* Белый текст для заголовка формы */
   text-align: center;
