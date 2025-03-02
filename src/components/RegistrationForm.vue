@@ -125,6 +125,10 @@ export default {
   padding: 0;
 }
 
+:root {
+ background: #fff;
+}
+
 html,
 body {
   width: 100%;
