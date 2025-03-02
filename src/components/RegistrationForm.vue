@@ -41,6 +41,11 @@
           </div>
           <button type="submit" class="submit-button">Зарегистрироваться</button>
         </form>
+
+        <!-- Таймер -->
+        <div class="timer">
+          <p>Время с момента регистрации: {{ formattedTime }}</p>
+        </div>
       </div>
     </transition>
   </div>
@@ -61,15 +66,19 @@ export default {
       middleName: "",
       birthDate: "",
       birthTime: "",
+      startTime: null,
+      currentTime: null,
+      timerInterval: null,
     };
   },
-  watch: {
-    showRegistrationText(newVal) {
-      if (newVal) {
-        setTimeout(() => {
-          this.showRegistrationText = false; // Скрыть текст через 3 секунды
-        }, 3000);
-      }
+  computed: {
+    formattedTime() {
+      if (!this.startTime || !this.currentTime) return "00:00:00";
+      const diff = Math.floor((this.currentTime - this.startTime) / 1000);
+      const hours = Math.floor(diff / 3600);
+      const minutes = Math.floor((diff % 3600) / 60);
+      const seconds = diff % 60;
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
     },
   },
   methods: {
@@ -99,19 +108,32 @@ export default {
         const response = await axios.post("https://uniback-1.onrender.com/api/register", userData);
         if (response.data.status === "success") {
           alert("Регистрация прошла успешно!");
+          this.startTimer();
         }
       } catch (error) {
         console.error("Ошибка при регистрации:", error);
         alert("Не удалось зарегистрироваться. Попробуйте снова.");
       }
     },
+    startTimer() {
+      this.startTime = Date.now();
+      this.currentTime = Date.now();
+      this.timerInterval = setInterval(() => {
+        this.currentTime = Date.now();
+      }, 1000);
+    },
+  },
+  beforeUnmount() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
   },
   mounted() {
     setTimeout(() => {
       this.showGreeting = false; // Скрыть приветствие через 3 секунды
     }, 3000);
 
-    this.initializeTelegramUser(); // Инициализация Telegram Web App
+      this.initializeTelegramUser(); // Инициализация Telegram Web App
   },
 };
 </script>
@@ -123,10 +145,6 @@ export default {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-:root {
- background: #fff;
 }
 
 html,
@@ -142,12 +160,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
   height: 100vh;
-  width: 100%;
-  padding: 20px;
   overflow: hidden;
-  background: #fff; /* Белый фон */
+  position: relative;
+  background: #fff; /* Белый фон для контейнера */
 }
 
 /* Градиентный текст */
@@ -207,37 +223,6 @@ body {
   margin: auto;
 }
 
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.submit-button {
-  width: 100%;
-  padding: 10px;
-  background: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.submit-button:hover {
-  background: #0056b3;
-}
 .registration-container h2 {
   color: #fff; /* Белый текст для заголовка формы */
   text-align: center;
@@ -285,6 +270,14 @@ body {
 
 .submit-button:hover {
   background: #e62ee6; /* Темно-фиолетовый цвет при наведении */
+}
+
+/* Таймер */
+.timer {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #fff; /* Белый текст для таймера */
+  text-align: center;
 }
 
 /* Медиа-запросы для мобильных устройств */
