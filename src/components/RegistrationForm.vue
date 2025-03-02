@@ -151,7 +151,7 @@ html,
 body {
   height: 100vh;
   line-height: 1.6;
-  background: #fff; /* Белый фон для всего приложения */
+  background: #fff !important; /* Белый фон для всего приложения */
   overflow: hidden;
 }
 
@@ -162,7 +162,7 @@ body {
   height: 100vh;
   overflow: hidden;
   position: relative;
-  background: #fff; /* Белый фон для контейнера */
+  background: #fff !important; /* Белый фон для контейнера */
 }
 
 /* Градиентный текст */
