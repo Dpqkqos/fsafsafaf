@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <!-- Приветственное сообщение -->
+    <!-- Приветствие -->
     <transition name="fade">
       <div v-if="showGreeting" class="greeting-message">
         <h2>Привет!</h2>
@@ -41,11 +41,6 @@
           </div>
           <button type="submit" class="submit-button">Зарегистрироваться</button>
         </form>
-
-        <!-- Таймер -->
-        <div class="timer">
-          <p>Время с момента регистрации: {{ formattedTime }}</p>
-        </div>
       </div>
     </transition>
   </div>
@@ -54,7 +49,7 @@
 <script>
 import axios from "axios";
 
-const API_URL = "https://uniback-1.onrender.com";
+const API_URL = "https://uniback-1.onrender.com"; // Укажи свой бэкенд
 
 export default {
   data() {
@@ -68,21 +63,7 @@ export default {
       middleName: "",
       birthDate: "",
       birthTime: "",
-      startTime: null,
-      currentTime: null,
-      timerInterval: null,
-      isCheckingRegistration: true, // Флаг для проверки регистрации
     };
-  },
-  computed: {
-    formattedTime() {
-      if (!this.startTime || !this.currentTime) return "00:00:00";
-      const diff = Math.floor((this.currentTime - this.startTime) / 1000);
-      const hours = Math.floor(diff / 3600);
-      const minutes = Math.floor((diff % 3600) / 60);
-      const seconds = diff % 60;
-      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-    },
   },
   methods: {
     async initializeTelegramUser() {
@@ -90,130 +71,75 @@ export default {
         if (window.Telegram?.WebApp) {
           const tg = window.Telegram.WebApp;
           const initData = tg.initDataUnsafe;
+          if (!initData || !initData.user) {
+            throw new Error("Ошибка получения Telegram ID");
+          }
           this.telegramId = initData.user.id;
-
-          // Развернуть приложение на весь экран
           tg.expand();
         } else {
           alert("Telegram Web App не поддерживается.");
         }
       } catch (error) {
-        console.error("Ошибка при инициализации Telegram:", error);
+        console.error("Ошибка инициализации Telegram:", error);
       }
     },
 
     async checkUserRegistration() {
       try {
-        const response = await axios.get(`${API_URL}/user/${this.telegramId}`);
-        if (response.data) {
-          localStorage.setItem("isRegistered", "true"); // Сохраняем флаг регистрации
-          this.$router.push({ name: "MainInterface" }); // Переход на главный интерфейс
+        if (!this.telegramId) return;
+        const response = await axios.get(`${API_URL}/api/main/${this.telegramId}`);
+        if (response.data && response.data.isregistred) {
+          localStorage.setItem("isRegistered", "true");
+          this.$emit("registration-complete"); // Сообщаем App.vue
         } else {
-          // Показываем приветствие, затем текст о регистрации, затем форму
+          this.showRegistrationText = true;
           setTimeout(() => {
-            this.showGreeting = false; // Скрываем приветствие через 3 секунды
-          }, 3000);
+            this.showRegistrationText = false;
+            this.showRegistrationForm = true;
+          }, 2000);
         }
       } catch (error) {
         console.error("Ошибка при проверке регистрации:", error);
+        this.showRegistrationText = true;
         setTimeout(() => {
-          this.showGreeting = false; // Скрываем приветствие через 3 секунды
-        }, 3000);
-      } finally {
-        this.isCheckingRegistration = false;
+          this.showRegistrationText = false;
+          this.showRegistrationForm = true;
+        }, 2000);
       }
     },
 
     async submitRegistration() {
+      if (!this.telegramId) {
+        alert("Ошибка: Telegram ID не получен.");
+        return;
+      }
+
       const userData = {
-        telegram_id: this.telegramId,
-        last_name: this.lastName,
-        first_name: this.firstName,
-        middle_name: this.middleName,
+        tg_id: this.telegramId,
+        surname: this.lastName,
+        name: this.firstName,
+        patronymic: this.middleName || "",
         birth_date: this.birthDate,
         birth_time: this.birthTime,
-    };
-
-    try {
-      await axios.post(`${API_URL}/register`, userData);
-      localStorage.setItem("isRegistered", "true");
-      this.$emit("registration-complete"); // Сообщаем App.vue, что регистрация завершена
-    } catch (error) {
-        console.error("Ошибка при регистрации:", error);
-        alert("Не удалось зарегистрироваться. Попробуйте снова.");
-      }
-    }
-
+      };
 
       try {
-        await axios.post(`${API_URL}/register`, userData);
+        await axios.post(`${API_URL}/api/register`, userData);
         localStorage.setItem("isRegistered", "true");
-        this.$router.push({ name: "MainInterface" });
+        this.$emit("registration-complete"); // Сообщаем App.vue
       } catch (error) {
         console.error("Ошибка при регистрации:", error);
         alert("Не удалось зарегистрироваться. Попробуйте снова.");
       }
     },
-
-    startTimer() {
-      this.startTime = Date.now();
-      this.currentTime = Date.now();
-      this.timerInterval = setInterval(() => {
-        this.currentTime = Date.now();
-      }, 1000);
-    },
-
-    handleGreetingLeave() {
-      // После исчезновения приветствия показываем текст о регистрации
-      this.showRegistrationText = true;
-      setTimeout(() => {
-        this.showRegistrationText = false; // Скрываем текст через 3 секунды
-      }, 3000);
-    },
-
-    handleRegistrationTextLeave() {
-      // После исчезновения текста о регистрации показываем форму
-      this.showRegistrationForm = true;
-    },
   },
 
-  beforeUnmount() {
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
-  },
-
-  mounted() {
-    if (localStorage.getItem("isRegistered") === "true") {
-      this.$router.push({ name: "MainInterface" });
-      return;
-    }
-
-    this.initializeTelegramUser().then(() => {
-      this.checkUserRegistration();
-    });
-  },
-
-  watch: {
-    showGreeting(newVal) {
-      if (!newVal) {
-        // Когда приветствие исчезает, показываем текст о регистрации
-        this.showRegistrationText = true;
-        setTimeout(() => {
-          this.showRegistrationText = false; // Скрываем текст через 3 секунды
-        }, 3000);
-      }
-    },
-    showRegistrationText(newVal) {
-      if (!newVal) {
-        // Когда текст о регистрации исчезает, показываем форму
-        this.showRegistrationForm = true;
-      }
-    },
+  async mounted() {
+    await this.initializeTelegramUser();
+    await this.checkUserRegistration();
   },
 };
 </script>
-
 <style scoped>
 /* Основные стили */
 * {
