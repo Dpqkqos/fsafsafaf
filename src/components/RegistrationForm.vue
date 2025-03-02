@@ -176,36 +176,28 @@ body {
 }
 
 /* Анимации */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 1s ease;
+/* Анимация появления/исчезновения */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease;
 }
-
-.fade-enter-from,
-.fade-leave-to {
+.fade-enter-from, .fade-leave-to {
   opacity: 0;
 }
 
-.slide-up-enter-active,
-.slide-up-leave-active {
+/* Анимация сдвига вверх */
+.slide-up-enter-active, .slide-up-leave-active {
   transition: transform 0.5s ease, opacity 0.5s ease;
 }
-
 .slide-up-enter-from {
-  transform: translateY(100%);
+  transform: translateY(50px);
   opacity: 0;
 }
-
 .slide-up-leave-to {
-  transform: translateY(-100%);
+  transform: translateY(-50px);
   opacity: 0;
 }
 
-.slide-up-enter-to,
-.slide-up-leave-from {
-  transform: translateY(0);
-  opacity: 1;
-}
+
 
 /* Стили формы регистрации */
 .registration-container {
