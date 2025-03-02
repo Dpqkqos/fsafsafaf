@@ -58,24 +58,20 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden; /* Предотвращает прокрутку */
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch; /* Для плавной прокрутки на iOS */
 }
 
-body {
-  font-family: "Montserrat", sans-serif;
-  line-height: 1.6;
-  background: #fff; /* Белый фон для всего приложения */
-}
 .app-container {
   display: flex;
-  justify-content: center; /* Центрирование по горизонтали */
-  align-items: center; /* Центрирование по вертикали */
+  justify-content: center;
+  align-items: center;
   position: relative;
-  height: 100vh; /* Занимает всю высоту viewport */
-  width: 100%; /* Занимает всю ширину viewport */
-  padding: 20px; /* Отступы для контента */
-  box-sizing: border-box; /* Включает padding и border в размер элемента */
-  background: #fff; /* Белый фон */
-  overflow: hidden; /* Предотвращает прокрутку при необходимости */
+  height: 100vh;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  background: #fff;
+  overflow: auto; /* Разрешить прокрутку, если контент выходит за пределы экрана */
 }
 </style>
