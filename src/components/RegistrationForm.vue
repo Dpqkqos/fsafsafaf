@@ -132,7 +132,18 @@ export default {
         middle_name: this.middleName,
         birth_date: this.birthDate,
         birth_time: this.birthTime,
-      };
+    };
+
+    try {
+      await axios.post(`${API_URL}/register`, userData);
+      localStorage.setItem("isRegistered", "true");
+      this.$emit("registration-complete"); // Сообщаем App.vue, что регистрация завершена
+    } catch (error) {
+        console.error("Ошибка при регистрации:", error);
+        alert("Не удалось зарегистрироваться. Попробуйте снова.");
+      }
+    }
+
 
       try {
         await axios.post(`${API_URL}/register`, userData);
