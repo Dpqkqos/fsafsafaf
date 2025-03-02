@@ -1,267 +1,318 @@
 <template>
   <div class="app-container">
-    <!-- Загрузчик -->
-    <div v-if="loading" class="loader">Загрузка...</div>
-
-    <!-- Основной контент -->
-    <template v-else>
-      <!-- Профиль -->
-      <div class="profile-section">
-        <h1 class="main-title">Личная карточка<span class="accent">✦</span></h1>
-        <div class="profile-card">
-          <img :src="user.avatar" class="user-avatar" alt="Аватар" />
-          <div class="user-info">
-            <h2 class="user-name">{{ user.fullName }}</h2>
-            <div class="user-stats">
-              <div class="stat-item">
-                <span class="icon">✦</span>
-                {{ user.daysOnPlatform }} {{ daysText }} на платформе
-              </div>
-              <div class="stat-item">
-                <span class="icon">✦</span>
-                Ваш запрос: {{ user.request }}
-              </div>
-            </div>
-            <button @click="toggleRequestWindow" class="change-request-button">
-              {{ showRequestModal ? 'Закрыть' : 'Изменить запрос' }}
-            </button>
-            <div v-if="showRequestModal" class="request-window">
-              <div class="requests-list">
-                <button
-                  v-for="(request, index) in requests"
-                  :key="index"
-                  @click="selectRequest(request)"
-                  class="request-item"
-                >
-                  {{ request }}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+    <!-- Приветственное сообщение -->
+    <transition name="fade" @after-leave="showRegistrationText = true">
+      <div v-if="showGreeting" class="greeting-message">
+        <h2>Привет!</h2>
       </div>
+    </transition>
 
-      <!-- Прогноз -->
-      <div class="forecast-section">
-        <h2 class="section-title">Прогноз на день</h2>
-        <div class="forecast-card">
-          <div class="forecast-content">
-            <span class="forecast-icon">◎</span>
-            <p>{{ forecast || 'Сегодня будет прекрасный день!' }}</p>
-          </div>
-        </div>
+    <!-- Сообщение о регистрации -->
+    <transition name="fade" @after-leave="showRegistrationForm = true">
+      <div v-if="showRegistrationText" class="registration-text">
+        <h3>Чтобы продолжить, пройди регистрацию.</h3>
       </div>
+    </transition>
 
-      <!-- Эмоции -->
-      <div class="emotions-section">
-        <div class="emotions-header">
-          <h2 class="section-title">Ведение эмоционального состояния<span class="accent">✦</span></h2>
-          <button @click="toggleEmotionWindow" class="add-button">
-            {{ showEmotionModal ? 'Закрыть' : '+ Добавить' }}
-          </button>
-          <div v-if="showEmotionModal" class="emotion-window">
-            <textarea v-model="newEmotion" placeholder="Сегодня я чувствую..."></textarea>
-            <button @click="addEmotion" class="save-btn">Сохранить</button>
+    <!-- Форма регистрации -->
+    <transition name="slide-up">
+      <div v-if="showRegistrationForm" class="registration-container">
+        <h2>Регистрация</h2>
+        <form @submit.prevent="submitRegistration">
+          <div class="form-group">
+            <label for="lastName">Фамилия:</label>
+            <input type="text" id="lastName" v-model="lastName" required />
           </div>
-        </div>
-        <div class="emotions-table">
-          <div class="table-header">
-            <div class="day-col">День</div>
-            <div class="emotion-col">Эмоциональное состояние</div>
-            <div class="action-col"></div>
+          <div class="form-group">
+            <label for="firstName">Имя:</label>
+            <input type="text" id="firstName" v-model="firstName" required />
           </div>
-          <div v-for="(emotion, index) in reversedEmotions" :key="emotion.id" class="emotion-row">
-            <div class="day-col">{{ totalEmotions - index }}</div>
-            <div class="emotion-col">{{ emotion.state }}</div>
-            <div class="action-col">
-              <button @click="deleteEmotion(emotion.id)" class="delete-btn">🗑️</button>
-            </div>
+          <div class="form-group">
+            <label for="middleName">Отчество:</label>
+            <input type="text" id="middleName" v-model="middleName" />
           </div>
-        </div>
+          <div class="form-group">
+            <label for="birthDate">Дата рождения:</label>
+            <input type="date" id="birthDate" v-model="birthDate" required />
+          </div>
+          <div class="form-group">
+            <label for="birthTime">Время рождения:</label>
+            <input type="time" id="birthTime" v-model="birthTime" required />
+          </div>
+          <button type="submit" class="submit-button">Зарегистрироваться</button>
+        </form>
       </div>
-    </template>
+    </transition>
   </div>
 </template>
 
 <script>
 import axios from "axios";
 
-const API_URL = "https://uniback-1.onrender.com"; // Бэкенд
-
 export default {
   data() {
     return {
-      loading: true,
-      showEmotionModal: false,
-      showRequestModal: false,
-      newEmotion: "",
-      forecast: "",
-      user: {
-        id: null,
-        fullName: "Пользователь",
-        avatar: "",
-        emotions: [],
-        daysOnPlatform: 0,
-        request: "Любовь",
-      },
-      requests: ["Любовь", "Карьера", "Здоровье", "Финансы", "Саморазвитие", "Отношения"],
+      showGreeting: true,
+      showRegistrationText: false,
+      showRegistrationForm: false,
+      telegramId: null,
+      lastName: "",
+      firstName: "",
+      middleName: "",
+      birthDate: "",
+      birthTime: "",
     };
   },
-  computed: {
-    reversedEmotions() {
-      return [...this.user.emotions].reverse();
-    },
-    totalEmotions() {
-      return this.user.emotions.length;
-    },
-    daysText() {
-      const days = this.user.daysOnPlatform;
-      if (days % 10 === 1 && days % 100 !== 11) return "день";
-      if ([2, 3, 4].includes(days % 10) && ![12, 13, 14].includes(days % 100)) return "дня";
-      return "дней";
+  watch: {
+    showRegistrationText(newVal) {
+      if (newVal) {
+        setTimeout(() => {
+          this.showRegistrationText = false; // Скрыть текст через 3 секунды
+        }, 3000);
+      }
     },
   },
   methods: {
-    async initializeApp() {
-      try {
-        await this.initTelegramUser();
-        await this.loadUserData();
-        await this.loadUserRequest();
-      } catch (error) {
-        console.error("Ошибка инициализации:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async initTelegramUser() {
-      try {
-        if (window.Telegram?.WebApp) {
-          const tg = window.Telegram.WebApp;
-          const initData = tg.initDataUnsafe;
-          this.user.id = initData.user.id;
-          this.user.avatar = initData.user.photo_url;
-          tg.expand();
-          tg.enableClosingConfirmation();
-        } else {
-          throw new Error("Telegram Web App не найден");
-        }
-      } catch (error) {
-        console.error("Ошибка инициализации Telegram:", error);
-      }
-    },
-
-    async loadUserData() {
-      try {
-        const response = await axios.get(`${API_URL}/user/${this.user.id}`);
-        if (response.data) {
-          this.user.fullName = `${response.data.first_name} ${response.data.middle_name || ""}`.trim() || "Пользователь";
-          this.user.request = response.data.request;
-        }
-
-        const emotionsResponse = await axios.get(`${API_URL}/emotions/${this.user.id}`);
-        this.user.emotions = emotionsResponse.data;
-      } catch (error) {
-        console.error("Ошибка загрузки данных:", error);
-      }
-    },
-
-    async loadUserRequest() {
-      try {
-        const response = await axios.get(`${API_URL}/user/${this.user.id}`);
-        if (response.data.request) {
-          this.user.request = response.data.request;
-        }
-      } catch (error) {
-        console.error("Ошибка при загрузке запроса:", error);
-      }
-    },
-
-    async addEmotion() {
-      if (!this.newEmotion.trim()) {
-        this.showAlert("Поле эмоции не может быть пустым!");
-        return;
-      }
-
-      try {
-        const response = await axios.post(`${API_URL}/add_emotion`, {
-          telegram_id: this.user.id,
-          state: this.newEmotion,
-        });
-
-        this.user.emotions.push(response.data);
-        this.newEmotion = "";
-        this.showEmotionModal = false;
-      } catch (error) {
-        console.error("Ошибка при добавлении эмоции:", error);
-        this.showAlert("Не удалось добавить эмоцию. Попробуйте снова.");
-      }
-    },
-
-    async deleteEmotion(emotionId) {
-      try {
-        await axios.delete(`${API_URL}/emotion/${emotionId}`);
-        this.user.emotions = this.user.emotions.filter((e) => e.id !== emotionId);
-      } catch (error) {
-        console.error("Ошибка удаления эмоции:", error);
-        this.showAlert("Не удалось удалить эмоцию. Попробуйте снова.");
-      }
-    },
-
-    async updateRequest(request) {
-      try {
-        await axios.post(`${API_URL}/update_request`, {
-          telegram_id: this.user.id,
-          request: request,
-        });
-        this.user.request = request;
-      } catch (error) {
-        console.error("Ошибка при обновлении запроса:", error);
-      }
-    },
-
-    toggleEmotionWindow() {
-      this.showEmotionModal = !this.showEmotionModal;
-    },
-
-    toggleRequestWindow() {
-      this.showRequestModal = !this.showRequestModal;
-    },
-
-    selectRequest(request) {
-      this.updateRequest(request);
-      this.showRequestModal = false;
-    },
-
-    showAlert(message) {
+    async initializeTelegramUser() {
       if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.showAlert(message);
+        const tg = window.Telegram.WebApp;
+        const initData = tg.initDataUnsafe;
+        this.telegramId = initData.user.id;
+
+        // Развернуть приложение на весь экран
+        tg.expand();
       } else {
-        alert(message);
+        alert("Telegram Web App не поддерживается.");
+      }
+    },
+    async submitRegistration() {
+      const userData = {
+        tg_id: this.telegramId,
+        surname: this.lastName,
+        name: this.firstName,
+        patronymic: this.middleName,
+        birth_date: this.birthDate,
+        birth_time: this.birthTime,
+      };
+
+      try {
+        const response = await axios.post("https://uniback-1.onrender.com/api/register", userData);
+        if (response.data.status === "success") {
+          alert("Регистрация прошла успешно!");
+        }
+      } catch (error) {
+        console.error("Ошибка при регистрации:", error);
+        alert("Не удалось зарегистрироваться. Попробуйте снова.");
       }
     },
   },
   mounted() {
-    this.initializeApp();
+    setTimeout(() => {
+      this.showGreeting = false; // Скрыть приветствие через 3 секунды
+    }, 3000);
+
+    this.initializeTelegramUser(); // Инициализация Telegram Web App
   },
 };
 </script>
 
-<style>
+<style scoped>
+/* Основные стили */
+* {
+  font-family: "Montserrat", sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+ background: #fff;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100vh;
+  line-height: 1.6;
+  background: #fff; /* Белый фон для всего приложения */
+  overflow: hidden;
+}
+
+.app-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  padding: 20px;
+  overflow: hidden;
+  background: #fff; /* Белый фон */
+}
+
+/* Градиентный текст */
+.greeting-message h2,
+.registration-text h3 {
+  font-size: 1.5rem;
+  background: linear-gradient(45deg, #f70eff, #7700ff, #750cff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Анимации */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 1s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.slide-up-enter-from {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+.slide-up-leave-to {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.slide-up-enter-to,
+.slide-up-leave-from {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Стили формы регистрации */
+.registration-container {
+  width: 90%;
+  max-width: 400px;
+  padding: 20px;
+  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff); /* Градиентный фон для формы */
+  background-size: 400% 400%;
+  animation: gradient 4s ease infinite;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  top: 0;
+  left: 0;
+  margin: auto;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.submit-button:hover {
+  background: #0056b3;
+}
+.registration-container h2 {
+  color: #fff; /* Белый текст для заголовка формы */
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #fff; /* Белый текст для лейблов */
+  font-size: 0.9rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff; /* Белый текст для инпутов */
+  font-size: 0.9rem;
+}
+
+.form-group input::placeholder {
+  color: rgba(255, 255, 255, 0.7); /* Серый текст для плейсхолдера */
+}
+
+.submit-button {
+  width: 100%;
+  padding: 10px;
+  background: #fb0eff; /* Фиолетовый цвет кнопки */
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.submit-button:hover {
+  background: #e62ee6; /* Темно-фиолетовый цвет при наведении */
+}
+
+/* Медиа-запросы для мобильных устройств */
 @media (max-width: 768px) {
-  .profile-card, .forecast-card, .emotions-table {
+  .registration-container {
     width: 100%;
-    margin: 10px 0;
+    padding: 15px;
   }
 
-  .user-avatar {
-    width: 80px;
-    height: 80px;
+  .form-group input {
+    font-size: 0.8rem;
   }
 
-  .change-request-button, .add-button {
-    font-size: 0.9rem;
-    padding: 10px;
+  .submit-button {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 </style>
