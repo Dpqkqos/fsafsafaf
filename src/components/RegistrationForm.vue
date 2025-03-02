@@ -1,324 +1,87 @@
-<template>
-  <div class="app-container">
-    <!-- Приветственное сообщение -->
-    <transition name="fade" @after-leave="showRegistrationText = true">
-      <div v-if="showGreeting" class="greeting-message">
-        <h2>Привет!</h2>
-      </div>
-    </transition>
+from fastapi import FastAPI, HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column
+from pydantic import BaseModel
+from datetime import datetime
 
-    <!-- Сообщение о регистрации -->
-    <transition name="fade" @after-leave="showRegistrationForm = true">
-      <div v-if="showRegistrationText" class="registration-text">
-        <h3>Чтобы продолжить, пройди регистрацию.</h3>
-      </div>
-    </transition>
+# Настройка базы данных
+engine = create_async_engine("sqlite+aiosqlite:///db.sqlite3", echo=True)
+async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
-    <!-- Форма регистрации -->
-    <transition name="slide-up">
-      <div v-if="showRegistrationForm" class="registration-container">
-        <h2>Регистрация</h2>
-        <form @submit.prevent="submitRegistration">
-          <div class="form-group">
-            <label for="lastName">Фамилия:</label>
-            <input type="text" id="lastName" v-model="lastName" required />
-          </div>
-          <div class="form-group">
-            <label for="firstName">Имя:</label>
-            <input type="text" id="firstName" v-model="firstName" required />
-          </div>
-          <div class="form-group">
-            <label for="middleName">Отчество:</label>
-            <input type="text" id="middleName" v-model="middleName" />
-          </div>
-          <div class="form-group">
-            <label for="birthDate">Дата рождения:</label>
-            <input type="date" id="birthDate" v-model="birthDate" required />
-          </div>
-          <div class="form-group">
-            <label for="birthTime">Время рождения:</label>
-            <input type="time" id="birthTime" v-model="birthTime" required />
-          </div>
-          <button type="submit" class="submit-button">Зарегистрироваться</button>
-        </form>
+# Базовый класс для моделей SQLAlchemy
+class Base(DeclarativeBase):
+    pass
 
-        <!-- Таймер -->
-        <div class="timer">
-          <p>Время с момента регистрации: {{ formattedTime }}</p>
-        </div>
-      </div>
-    </transition>
-  </div>
-</template>
+# Модель пользователя
+class User(Base):
+    __tablename__ = "users"
 
-<script>
-import axios from "axios";
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tg_id: Mapped[int] = mapped_column(unique=True)
+    isregistred: Mapped[bool] = mapped_column(default=False)
+    surname: Mapped[str] = mapped_column(nullable=True)
+    name: Mapped[str] = mapped_column(nullable=True)
+    patronymic: Mapped[str] = mapped_column(nullable=True)
+    birth_date: Mapped[str] = mapped_column(nullable=True)
+    birth_time: Mapped[str] = mapped_column(nullable=True)
+    request: Mapped[str] = mapped_column(nullable=True, default="Любовь")
 
-export default {
-  data() {
-    return {
-      showGreeting: true,
-      showRegistrationText: false,
-      showRegistrationForm: false,
-      telegramId: null,
-      lastName: "",
-      firstName: "",
-      middleName: "",
-      birthDate: "",
-      birthTime: "",
-      startTime: null,
-      currentTime: null,
-      timerInterval: null,
-    };
-  },
-  computed: {
-    formattedTime() {
-      if (!this.startTime || !this.currentTime) return "00:00:00";
-      const diff = Math.floor((this.currentTime - this.startTime) / 1000);
-      const hours = Math.floor(diff / 3600);
-      const minutes = Math.floor((diff % 3600) / 60);
-      const seconds = diff % 60;
-      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-    },
-  },
-  watch: {
-    showRegistrationText(newVal) {
-      if (newVal) {
-        setTimeout(() => {
-          this.showRegistrationText = false; // Скрыть текст через 3 секунды
-        }, 3000);
-      }
-    },
-  },
-  methods: {
-    async initializeTelegramUser() {
-      if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
-        const initData = tg.initDataUnsafe;
-        this.telegramId = initData.user.id;
+# Модель для регистрации
+class RegistrationData(BaseModel):
+    tg_id: int
+    surname: str
+    name: str
+    patronymic: str
+    birth_date: str
+    birth_time: str
 
-        // Заполнение данных пользователя из Telegram
-        this.firstName = initData.user.first_name || "";
-        this.lastName = initData.user.last_name || "";
-        this.middleName = initData.user.username || "";
+app = FastAPI()
 
-        // Развернуть приложение на весь экран
-        tg.expand();
-      } else {
-        alert("Telegram Web App не поддерживается.");
-      }
-    },
-    async submitRegistration() {
-      const userData = {
-        tg_id: this.telegramId,
-        surname: this.lastName,
-        name: this.firstName,
-        patronymic: this.middleName,
-        birth_date: this.birthDate,
-        birth_time: this.birthTime,
-      };
+@app.on_event("startup")
+async def startup():
+    # Создаем таблицы в базе данных, если они не существуют
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
-      try {
-        const response = await axios.post("https://uniback-1.onrender.com/api/register", userData);
-        if (response.data.status === "success") {
-          alert("Регистрация прошла успешно!");
-          this.startTimer();
-        }
-      } catch (error) {
-        console.error("Ошибка при регистрации:", error);
-        alert("Не удалось зарегистрироваться. Попробуйте снова.");
-      }
-    },
-    startTimer() {
-      this.startTime = Date.now();
-      this.currentTime = Date.now();
-      this.timerInterval = setInterval(() => {
-        this.currentTime = Date.now();
-      }, 1000);
-    },
-  },
-  beforeUnmount() {
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
-  },
-  mounted() {
-    setTimeout(() => {
-      this.showGreeting = false; // Скрыть приветствие через 3 секунды
-    }, 3000);
+@app.get("/api/main/{tg_id}")
+async def check_registration(tg_id: int):
+    async with async_session() as session:
+        result = await session.execute(select(User).where(User.tg_id == tg_id))
+        user = result.scalar_one_or_none()
+        
+        if user:
+            return {"isregistred": user.isregistred}
+        else:
+            return {"isregistred": False}
 
-    this.initializeTelegramUser(); // Инициализация Telegram Web App
-  },
-};
-</script>
+@app.post("/api/register")
+async def register_user(data: RegistrationData):
+    async with async_session() as session:
+        # Проверяем, существует ли пользователь
+        result = await session.execute(select(User).where(User.tg_id == data.tg_id))
+        user = result.scalar_one_or_none()
 
-<style scoped>
-/* Основные стили */
-* {
-  font-family: "Montserrat", sans-serif;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+        if user:
+            # Если пользователь существует, обновляем его данные
+            user.surname = data.surname
+            user.name = data.name
+            user.patronymic = data.patronymic
+            user.birth_date = data.birth_date
+            user.birth_time = data.birth_time
+            user.isregistred = True
+        else:
+            # Если пользователь не существует, создаем нового
+            new_user = User(
+                tg_id=data.tg_id,
+                surname=data.surname,
+                name=data.name,
+                patronymic=data.patronymic,
+                birth_date=data.birth_date,
+                birth_time=data.birth_time,
+                isregistred=True
+            )
+            session.add(new_user)
 
-html,
-body {
-  height: 100vh;
-  line-height: 1.6;
-  background: #fff; /* Белый фон для всего приложения */
-  overflow: hidden;
-}
-
-.app-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  overflow: hidden;
-  position: relative;
-  background: #fff; /* Белый фон для контейнера */
-}
-
-/* Градиентный текст */
-.greeting-message h2,
-.registration-text h3 {
-  font-size: 1.5rem;
-  background: linear-gradient(45deg, #f70eff, #7700ff, #750cff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Анимации */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 1s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: transform 0.5s ease, opacity 0.5s ease;
-}
-
-.slide-up-enter-from {
-  transform: translateY(100%);
-  opacity: 0;
-}
-
-.slide-up-leave-to {
-  transform: translateY(-100%);
-  opacity: 0;
-}
-
-.slide-up-enter-to,
-.slide-up-leave-from {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-/* Стили формы регистрации */
-.registration-container {
-  width: 90%;
-  max-width: 400px;
-  padding: 20px;
-  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff); /* Градиентный фон для формы */
-  background-size: 400% 400%;
-  animation: gradient 4s ease infinite;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  position: relative;
-  top: 0;
-  left: 0;
-  margin: auto;
-}
-
-.registration-container h2 {
-  color: #fff; /* Белый текст для заголовка формы */
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 1.2rem;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #fff; /* Белый текст для лейблов */
-  font-size: 0.9rem;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff; /* Белый текст для инпутов */
-  font-size: 0.9rem;
-}
-
-.form-group input::placeholder {
-  color: rgba(255, 255, 255, 0.7); /* Серый текст для плейсхолдера */
-}
-
-.submit-button {
-  width: 100%;
-  padding: 10px;
-  background: #fb0eff; /* Фиолетовый цвет кнопки */
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  font-size: 0.9rem;
-}
-
-.submit-button:hover {
-  background: #e62ee6; /* Темно-фиолетовый цвет при наведении */
-}
-
-/* Таймер */
-.timer {
-  margin-top: 20px;
-  font-size: 0.9rem;
-  color: #fff; /* Белый текст для таймера */
-  text-align: center;
-}
-
-/* Медиа-запросы для мобильных устройств */
-@media (max-width: 768px) {
-  .registration-container {
-    width: 100%;
-    padding: 15px;
-  }
-
-  .form-group input {
-    font-size: 0.8rem;
-  }
-
-  .submit-button {
-    font-size: 0.8rem;
-    padding: 8px;
-  }
-}
-
-@keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-</style>
+        await session.commit()
+        return {"status": "success", "isregistred": True}
