@@ -67,7 +67,7 @@ export default {
     showRegistrationText(newVal) {
       if (newVal) {
         setTimeout(() => {
-          this.showRegistrationText = false; // Скрыть текст через 3 секунды
+          this.showRegistrationText = false;
         }, 3000);
       }
     },
@@ -78,8 +78,6 @@ export default {
         const tg = window.Telegram.WebApp;
         const initData = tg.initDataUnsafe;
         this.telegramId = initData.user.id;
-
-        // Развернуть приложение на весь экран
         tg.expand();
       } else {
         alert("Telegram Web App не поддерживается.");
@@ -108,20 +106,13 @@ export default {
   },
   mounted() {
     setTimeout(() => {
-      this.showGreeting = false; // Скрыть приветствие через 3 секунды
+      this.showGreeting = false;
     }, 3000);
-
-    this.initializeTelegramUser(); // Инициализация Telegram Web App
-
-    // Установка высоты для iOS
-    const setHeight = () => {
-      document.documentElement.style.setProperty('--vh', `${window.innerHeight}px`);
-    };
-    window.addEventListener('resize', setHeight);
-    setHeight();
+    this.initializeTelegramUser();
   },
 };
 </script>
+
 
 <style scoped>
 /* Основные стили */
