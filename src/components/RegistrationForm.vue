@@ -79,11 +79,6 @@ export default {
         const initData = tg.initDataUnsafe;
         this.telegramId = initData.user.id;
 
-        // Заполнение данных пользователя из Telegram
-        this.firstName = initData.user.first_name || "";
-        this.lastName = initData.user.last_name || "";
-        this.middleName = initData.user.username || "";
-
         // Развернуть приложение на весь экран
         tg.expand();
       } else {
@@ -134,7 +129,6 @@ html,
 body {
   height: 100vh;
   line-height: 1.6;
-  background: #fff; /* Белый фон для всего приложения */
   overflow: hidden;
 }
 
@@ -142,10 +136,12 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  overflow: hidden;
   position: relative;
-  background: #fff; /* Белый фон для контейнера */
+  height: 100vh;
+  width: 100%;
+  padding: 20px;
+  overflow: hidden;
+  background: #fff; /* Белый фон */
 }
 
 /* Градиентный текст */
