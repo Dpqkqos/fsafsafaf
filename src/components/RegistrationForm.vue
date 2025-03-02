@@ -94,7 +94,7 @@ export default {
     async initializeTelegramUser() {
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
-        const initData = JSON.parse(tg.initDataUnsafe);
+        const initData = tg.initDataUnsafe;
         this.telegramId = initData.user.id;
 
         // Заполнение данных пользователя из Telegram
@@ -110,17 +110,20 @@ export default {
     },
     async submitRegistration() {
       const userData = {
-        telegram_id: this.telegramId,
-        lastName: this.lastName,
-        firstName: this.firstName,
-        middleName: this.middleName,
-        birthDate: this.birthDate,
-        birthTime: this.birthTime,
+        tg_id: this.telegramId,
+        surname: this.lastName,
+        name: this.firstName,
+        patronymic: this.middleName,
+        birth_date: this.birthDate,
+        birth_time: this.birthTime,
       };
 
       try {
-        await axios.post("https://uniback-production.up.railway.app/register", userData);
-        this.startTimer();
+        const response = await axios.post("https://uniback-1.onrender.com/api/register", userData);
+        if (response.data.status === "success") {
+          alert("Регистрация прошла успешно!");
+          this.startTimer();
+        }
       } catch (error) {
         console.error("Ошибка при регистрации:", error);
         alert("Не удалось зарегистрироваться. Попробуйте снова.");
@@ -162,7 +165,7 @@ html,
 body {
   height: 100vh;
   line-height: 1.6;
-  background: #fff;
+  background: #fff; /* Белый фон для всего приложения */
   overflow: hidden;
 }
 
@@ -173,6 +176,7 @@ body {
   height: 100vh;
   overflow: hidden;
   position: relative;
+  background: #fff; /* Белый фон для контейнера */
 }
 
 /* Градиентный текст */
@@ -221,7 +225,7 @@ body {
   width: 90%;
   max-width: 400px;
   padding: 20px;
-  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff);
+  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff); /* Градиентный фон для формы */
   background-size: 400% 400%;
   animation: gradient 4s ease infinite;
   border-radius: 10px;
@@ -233,7 +237,7 @@ body {
 }
 
 .registration-container h2 {
-  color: #fff;
+  color: #fff; /* Белый текст для заголовка формы */
   text-align: center;
   margin-bottom: 20px;
   font-size: 1.2rem;
@@ -247,7 +251,7 @@ body {
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
-  color: #fff;
+  color: #fff; /* Белый текст для лейблов */
   font-size: 0.9rem;
 }
 
@@ -257,18 +261,18 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: #fff; /* Белый текст для инпутов */
   font-size: 0.9rem;
 }
 
 .form-group input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.7); /* Серый текст для плейсхолдера */
 }
 
 .submit-button {
   width: 100%;
   padding: 10px;
-  background: #fb0eff;
+  background: #fb0eff; /* Фиолетовый цвет кнопки */
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -278,14 +282,14 @@ body {
 }
 
 .submit-button:hover {
-  background: #e62ee6;
+  background: #e62ee6; /* Темно-фиолетовый цвет при наведении */
 }
 
 /* Таймер */
 .timer {
   margin-top: 20px;
   font-size: 0.9rem;
-  color: #fff;
+  color: #fff; /* Белый текст для таймера */
   text-align: center;
 }
 
