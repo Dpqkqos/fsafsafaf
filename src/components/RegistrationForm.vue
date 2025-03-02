@@ -112,6 +112,13 @@ export default {
     }, 3000);
 
     this.initializeTelegramUser(); // Инициализация Telegram Web App
+
+    // Установка высоты для iOS
+    const setHeight = () => {
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight}px`);
+    };
+    window.addEventListener('resize', setHeight);
+    setHeight();
   },
 };
 </script>
@@ -132,22 +139,25 @@ export default {
 html,
 body {
   width: 100%;
-  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
   line-height: 1.6;
-  background: #fff; /* Белый фон для всего приложения */
+  background: #fff;
   overflow: hidden;
 }
 
 .app-container {
   display: flex;
+  display: -webkit-flex;
   justify-content: center;
+  -webkit-justify-content: center;
   align-items: center;
+  -webkit-align-items: center;
   position: relative;
-  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
   width: 100%;
   padding: 20px;
   overflow: hidden;
-  background: #fff; /* Белый фон */
+  background: #fff;
 }
 
 /* Градиентный текст */
@@ -157,12 +167,15 @@ body {
   background: linear-gradient(45deg, #f70eff, #7700ff, #750cff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
 }
 
 /* Анимации */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 1s ease;
+  -webkit-transition: opacity 1s ease;
 }
 
 .fade-enter-from,
@@ -173,21 +186,25 @@ body {
 .slide-up-enter-active,
 .slide-up-leave-active {
   transition: transform 0.5s ease, opacity 0.5s ease;
+  -webkit-transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
 .slide-up-enter-from {
   transform: translateY(100%);
+  -webkit-transform: translateY(100%);
   opacity: 0;
 }
 
 .slide-up-leave-to {
   transform: translateY(-100%);
+  -webkit-transform: translateY(-100%);
   opacity: 0;
 }
 
 .slide-up-enter-to,
 .slide-up-leave-from {
   transform: translateY(0);
+  -webkit-transform: translateY(0);
   opacity: 1;
 }
 
@@ -196,9 +213,10 @@ body {
   width: 90%;
   max-width: 400px;
   padding: 20px;
-  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff); /* Градиентный фон для формы */
+  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff);
   background-size: 400% 400%;
   animation: gradient 4s ease infinite;
+  -webkit-animation: gradient 4s ease infinite;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   position: relative;
@@ -215,45 +233,7 @@ body {
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.submit-button {
-  width: 100%;
-  padding: 10px;
-  background: #007bff;
   color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.submit-button:hover {
-  background: #0056b3;
-}
-.registration-container h2 {
-  color: #fff; /* Белый текст для заголовка формы */
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 1.2rem;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #fff; /* Белый текст для лейблов */
   font-size: 0.9rem;
 }
 
@@ -263,18 +243,18 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.1);
-  color: #fff; /* Белый текст для инпутов */
+  color: #fff;
   font-size: 0.9rem;
 }
 
 .form-group input::placeholder {
-  color: rgba(255, 255, 255, 0.7); /* Серый текст для плейсхолдера */
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .submit-button {
   width: 100%;
   padding: 10px;
-  background: #fb0eff; /* Фиолетовый цвет кнопки */
+  background: #fb0eff;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -284,7 +264,7 @@ body {
 }
 
 .submit-button:hover {
-  background: #e62ee6; /* Темно-фиолетовый цвет при наведении */
+  background: #e62ee6;
 }
 
 /* Медиа-запросы для мобильных устройств */
