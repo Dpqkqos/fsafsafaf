@@ -113,7 +113,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 /* Основные стили */
 * {
@@ -124,13 +123,13 @@ export default {
 }
 
 :root {
- background: #fff;
+  background: #fff;
 }
 
 html,
 body {
   width: 100%;
-  height: calc(var(--vh, 1vh) * 100);
+  height: 100%;
   line-height: 1.6;
   background: #fff;
   overflow: hidden;
@@ -138,13 +137,10 @@ body {
 
 .app-container {
   display: flex;
-  display: -webkit-flex;
   justify-content: center;
-  -webkit-justify-content: center;
   align-items: center;
-  -webkit-align-items: center;
   position: relative;
-  height: calc(var(--vh, 1vh) * 100);
+  height: 100vh;
   width: 100%;
   padding: 20px;
   overflow: hidden;
@@ -160,13 +156,16 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-fill-color: transparent;
+  white-space: normal;
+  word-wrap: break-word;
+  padding: 0 10px;
+  text-align: center;
 }
 
 /* Анимации */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 1s ease;
-  -webkit-transition: opacity 1s ease;
 }
 
 .fade-enter-from,
@@ -177,25 +176,21 @@ body {
 .slide-up-enter-active,
 .slide-up-leave-active {
   transition: transform 0.5s ease, opacity 0.5s ease;
-  -webkit-transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
 .slide-up-enter-from {
   transform: translateY(100%);
-  -webkit-transform: translateY(100%);
   opacity: 0;
 }
 
 .slide-up-leave-to {
   transform: translateY(-100%);
-  -webkit-transform: translateY(-100%);
   opacity: 0;
 }
 
 .slide-up-enter-to,
 .slide-up-leave-from {
   transform: translateY(0);
-  -webkit-transform: translateY(0);
   opacity: 1;
 }
 
@@ -207,17 +202,20 @@ body {
   background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff);
   background-size: 400% 400%;
   animation: gradient 4s ease infinite;
-  -webkit-animation: gradient 4s ease infinite;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   position: relative;
-  top: 0;
-  left: 0;
   margin: auto;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .form-group {
   margin-bottom: 15px;
+  width: 100%;
 }
 
 .form-group label {
@@ -236,6 +234,7 @@ body {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
   font-size: 0.9rem;
+  box-sizing: border-box;
 }
 
 .form-group input::placeholder {
