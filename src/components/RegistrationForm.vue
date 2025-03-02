@@ -126,7 +126,7 @@ export default {
 }
 
 :root {
- background: #fff;
+  background: #fff;
 }
 
 html,
@@ -136,6 +136,7 @@ body {
   line-height: 1.6;
   background: #fff; /* Белый фон для всего приложения */
   overflow: hidden;
+  -webkit-overflow-scrolling: touch; /* Для плавной прокрутки на iOS */
 }
 
 .app-container {
@@ -145,7 +146,7 @@ body {
   position: relative;
   height: 100vh;
   width: 100%;
-  padding: 20px;
+  padding: 10px; /* Уменьшим padding для мобильных устройств */
   overflow: hidden;
   background: #fff; /* Белый фон */
 }
@@ -153,16 +154,18 @@ body {
 /* Градиентный текст */
 .greeting-message h2,
 .registration-text h3 {
-  font-size: 1.5rem;
+  font-size: 1.2rem; /* Уменьшим размер шрифта для мобильных устройств */
   background: linear-gradient(45deg, #f70eff, #7700ff, #750cff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-align: center; /* Центрируем текст */
+  margin: 0; /* Убираем лишние отступы */
 }
 
 /* Анимации */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 1s ease;
+  transition: opacity 0.5s ease;
 }
 
 .fade-enter-from,
@@ -172,31 +175,25 @@ body {
 
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: transform 0.5s ease, opacity 0.5s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .slide-up-enter-from {
-  transform: translateY(100%);
+  transform: translateY(20px);
   opacity: 0;
 }
 
 .slide-up-leave-to {
-  transform: translateY(-100%);
+  transform: translateY(-20px);
   opacity: 0;
-}
-
-.slide-up-enter-to,
-.slide-up-leave-from {
-  transform: translateY(0);
-  opacity: 1;
 }
 
 /* Стили формы регистрации */
 .registration-container {
   width: 90%;
-  max-width: 400px;
-  padding: 20px;
-  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff); /* Градиентный фон для формы */
+  max-width: 350px; /* Уменьшим максимальную ширину для мобильных устройств */
+  padding: 15px; /* Уменьшим padding */
+  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff);
   background-size: 400% 400%;
   animation: gradient 4s ease infinite;
   border-radius: 10px;
@@ -208,99 +205,61 @@ body {
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 10px; /* Уменьшим отступы */
 }
 
 .form-group label {
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.submit-button {
-  width: 100%;
-  padding: 10px;
-  background: #007bff;
   color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.submit-button:hover {
-  background: #0056b3;
-}
-.registration-container h2 {
-  color: #fff; /* Белый текст для заголовка формы */
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 1.2rem;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #fff; /* Белый текст для лейблов */
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Уменьшим размер шрифта */
 }
 
 .form-group input {
   width: 100%;
-  padding: 8px;
+  padding: 8px; /* Уменьшим padding */
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.1);
-  color: #fff; /* Белый текст для инпутов */
-  font-size: 0.9rem;
+  color: #fff;
+  font-size: 0.8rem; /* Уменьшим размер шрифта */
 }
 
 .form-group input::placeholder {
-  color: rgba(255, 255, 255, 0.7); /* Серый текст для плейсхолдера */
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .submit-button {
   width: 100%;
-  padding: 10px;
-  background: #fb0eff; /* Фиолетовый цвет кнопки */
+  padding: 8px; /* Уменьшим padding */
+  background: #fb0eff;
   color: #fff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.3s ease;
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Уменьшим размер шрифта */
 }
 
 .submit-button:hover {
-  background: #e62ee6; /* Темно-фиолетовый цвет при наведении */
+  background: #e62ee6;
 }
 
 /* Медиа-запросы для мобильных устройств */
 @media (max-width: 768px) {
   .registration-container {
     width: 100%;
-    padding: 15px;
+    padding: 10px; /* Уменьшим padding для маленьких экранов */
   }
 
   .form-group input {
-    font-size: 0.8rem;
+    font-size: 0.7rem; /* Уменьшим размер шрифта */
   }
 
   .submit-button {
-    font-size: 0.8rem;
-    padding: 8px;
+    font-size: 0.7rem; /* Уменьшим размер шрифта */
+    padding: 6px; /* Уменьшим padding */
   }
 }
 
