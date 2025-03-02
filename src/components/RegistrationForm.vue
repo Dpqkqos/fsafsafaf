@@ -81,12 +81,26 @@ export default {
       return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
     },
   },
+  watch: {
+    showRegistrationText(newVal) {
+      if (newVal) {
+        setTimeout(() => {
+          this.showRegistrationText = false; // Скрыть текст через 3 секунды
+        }, 3000);
+      }
+    },
+  },
   methods: {
     async initializeTelegramUser() {
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         const initData = tg.initDataUnsafe;
         this.telegramId = initData.user.id;
+
+        // Заполнение данных пользователя из Telegram
+        this.firstName = initData.user.first_name || "";
+        this.lastName = initData.user.last_name || "";
+        this.middleName = initData.user.username || "";
 
         // Развернуть приложение на весь экран
         tg.expand();
