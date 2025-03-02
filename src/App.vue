@@ -52,27 +52,3 @@ export default {
 };
 </script>
 
-<style>
-.app-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(45deg, #1f5bfe, #741efe, #6c11ff);
-  background-size: 400% 400%;
-  animation: gradient 4s ease infinite;
-}
-
-@keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-</style>
