@@ -686,7 +686,6 @@ html, body {
     background-position: 0% 50%;
   }
 }
-</style>
 
 @media (max-width: 768px) {
   .profile-card, .forecast-card, .emotions-table {
